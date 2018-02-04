@@ -21,32 +21,97 @@ server.listen(5000, function() {
 
 
 var players = {};
+
 io.on('connection', function(socket) {
-  socket.on('new player', function(x, y) {
+  socket.on('new player', function(coordinate) {
+    let coordinateX = parseInt(Math.random()*coordinate.x);
+    let coordinateY = parseInt(Math.random()*coordinate.y);
     players[socket.id] = {
-      x: Math.random()*x,
-      y: Math.random()*y
+      x: coordinateX - coordinateX % 5,
+      y: coordinateY - coordinateY % 5,
+      iSprDir: 0,
+      iSprPos: 0,
+      balls: []
     };
   });
-  socket.on('movement', function(data) {
-    var player = players[socket.id] || {};
-    if (data.left) {
-      player.x -= 5;
+  socket.on('movement', function(movement) {
+    var player = players[socket.id] || {balls: []};
+    player.iSprDir = movement.iSprDir;
+    player.iSprPos = movement.iSprPos;
+
+    movementPlayer(player, movement);
+    if(movement.fire) {
+      player.balls.push({
+        x: player.x + 32,
+        y: player.y + 30,
+        sprPos: movement.iSprDir
+      });
     }
-    if (data.up) {
-      player.y -= 5;
-    }
-    if (data.right) {
-      player.x += 5;
-    }
-    if (data.down) {
-      player.y += 5;
+    if(player.balls.length > 0) {
+      movementBalls(player, movement);
     }
   });
   socket.on('disconnect', function() {
     delete players[socket.id];
   });
 });
+
 setInterval(function() {
   io.sockets.emit('state', players);
 }, 1000 / 60);
+
+
+
+
+function movementPlayer(player, movement) {
+  if (movement.left && player.x > 0+10) {
+    player.x -= 5;
+  }
+  if (movement.up && player.y > 0+10) {
+    player.y -= 5;
+  }
+  if (movement.right && player.x < 1000-10) {
+    player.x += 5;
+  }
+  if (movement.down && player.y < 600-10) {
+    player.y += 5;
+  }
+}
+
+
+function movementBalls(player, movement) {
+  var newBalls = [];
+  player.balls.forEach(function (ball) {
+    if(ball.sprPos === 0) {
+      ball.x += movement.fireSpeed;
+    } else if (ball.sprPos === 1) {
+      ball.x += movement.fireSpeed;
+      ball.y += movement.fireSpeed;
+    } else if (ball.sprPos === 2) {
+      ball.y += movement.fireSpeed;
+    } else if (ball.sprPos === 3) {
+      ball.x -= movement.fireSpeed;
+      ball.y += movement.fireSpeed;
+    } else if (ball.sprPos === 4) {
+      ball.x -= movement.fireSpeed;
+    } else if (ball.sprPos === 5) {
+      ball.x -= movement.fireSpeed;
+      ball.y -= movement.fireSpeed;
+    } else if (ball.sprPos === 6) {
+      ball.y -= movement.fireSpeed;
+    } else if (ball.sprPos === 7) {
+      ball.x += movement.fireSpeed;
+      ball.y -= movement.fireSpeed;
+    }
+
+    if(ball.x < 1050 && ball.x > -50 && ball.y > -50 && ball.y < 650) {
+      newBalls.push(ball);
+    }
+  });
+
+  player.balls = newBalls;
+}
+
+function intersects( a, b ) {
+  return ( a.y < b.y1 || a.y1 > b.y || a.x1 < b.x || a.x > b.x1 );
+}

@@ -1,6 +1,12 @@
 {
-  "name": "Labyrinth-online",
-  "version": "0.0.0",
+  "name": "Dragons-game-online",
+  "author": "Arman-Zohrabyan",
+  "version": "1.0.0",
+  "description": "Online shooting game. Written in Canvas and NodeJS.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Arman-Zohrabyan/Dragons-game-online.git"
+  },
   "dependencies": {
     "express": "^4.16.2",
     "socket.io": "^2.0.4"
