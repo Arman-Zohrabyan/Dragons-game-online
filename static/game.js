@@ -1,4 +1,9 @@
-var userName = prompt("Write name of your dragon") || "undefined";
+var dragonName = localStorage.getItem("dragonName");
+if(dragonName === null) {
+  dragonName = prompt("Write name of your dragon") || "Undefined Dragon";
+  localStorage.setItem("dragonName", dragonName);
+}
+
 
 var documentInnerHeight = $(document).height();
 
@@ -31,14 +36,21 @@ var socket = io();
 
 
 
-// Инициализация фото дракона.
+// Инициализация картинку дракона.
 var oDragonImage = new Image();
 oDragonImage.src = '/static/images/dragon.gif';
 oDragonImage.onload = function() {};
 
+// Инициализация картинку огня.
 var oBallImage = new Image();
 oBallImage.src = '/static/images/fireball.png';
 oBallImage.onload = function() {};
+
+// Инициализвция картинку заднего фона.
+backgroundImage = new Image();
+backgroundImage.src = '/static/images/background.jpg';
+backgroundImage.onload = function() {
+}
 
 
 
@@ -118,11 +130,15 @@ function handlerOfPlayerMovement() {
 // Отрисовка игры.
 function drawGame() {
   socket.on('state', function(players) {
-    ctx.clearRect(0, 0, 1000, 600);
-    ctx.fillStyle = 'green';
+    ctx.clearRect(0, 0, 1100, 600);
+    ctx.textAlign = "center";
+
+    ctx.drawImage(backgroundImage, 0, 0, 1000, 600);
+
     for (var id in players) {
       var player = players[id];
       if(!player.hide) {
+
 
         // отрисовка дракона
         ctx.drawImage(
@@ -153,7 +169,16 @@ function drawGame() {
             );
           }
         }
+
+        ctx.font = '10px Verdana';
+        ctx.fillStyle = '#FF8C00';
+        ctx.fillText(player.dragonName, player.x+38, player.y);
+        ctx.fillStyle = '#BDB76B';
+        ctx.fillRect(1000, 0, 100, 600);
       }
+      ctx.font = '18px Verdana';
+      ctx.fillStyle = '#191970';
+      ctx.fillText("Игроки", 1050, 20);
     }
   });
 }
@@ -163,16 +188,16 @@ function drawGame() {
 $(document).ready(function () {
   // Задаем респонзивно ширину и высоту канваса.
   $("#canvas").height(documentInnerHeight);
-  $("#canvas").width(documentInnerHeight*5/3);
+  $("#canvas").width(documentInnerHeight*11/6);
 
   // Общие переменные и настройки канваса.
   canvas = $("#canvas")[0];
   ctx = canvas.getContext('2d');
-  canvas.width = 1000;
+  canvas.width = 1100;
   canvas.height = 600;
 
   // Добавляем нового игрока.
-  socket.emit('new player', {x: 1000, y: 600, name: userName});
+  socket.emit('new player', {x: 1000, y: 600, dragonName});
 
   // обработчик событий
   hendlerEvents();

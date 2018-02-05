@@ -23,13 +23,13 @@ server.listen(5000, function() {
 var players = {};
 
 io.on('connection', function(socket) {
-  socket.on('new player', function(coordinate) {
-    let coordinateX = parseInt(Math.random()*coordinate.x);
-    let coordinateY = parseInt(Math.random()*coordinate.y);
+  socket.on('new player', function(userData) {
+    let coordinateX = parseInt(Math.random()*userData.x);
+    let coordinateY = parseInt(Math.random()*userData.y);
     players[socket.id] = {
       x: coordinateX - coordinateX % 5,
       y: coordinateY - coordinateY % 5,
-      name,
+      dragonName: userData.dragonName,
       maxBalls: 1,
       iSprDir: 0,
       iSprPos: 0,
@@ -117,7 +117,7 @@ function movementBalls(player, movement, socketId) {
       }
     });
 
-    if(ball.x < 1030 && ball.x > -30 && ball.y > -30 && ball.y < 630 && !ball.remove) {
+    if(ball.x < 1000 && ball.x > 0 && ball.y > 0 && ball.y < 600 && !ball.remove) {
       newBalls.push(ball);
     }
   });
