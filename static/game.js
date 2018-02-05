@@ -1,4 +1,5 @@
-var userName = confirm("Write name of your dragon");
+var userName = prompt("Write name of your dragon") || "undefined";
+
 var documentInnerHeight = $(document).height();
 
 var canvas, ctx = null;
@@ -171,7 +172,7 @@ $(document).ready(function () {
   canvas.height = 600;
 
   // Добавляем нового игрока.
-  socket.emit('new player', {x: 1000, y: 600});
+  socket.emit('new player', {x: 1000, y: 600, name: userName});
 
   // обработчик событий
   hendlerEvents();
@@ -179,6 +180,6 @@ $(document).ready(function () {
   // Добавляем обработчик движения игрока
   handlerOfPlayerMovement();
 
-  // Отрисовываем игру
+  // Рисовка игру
   drawGame();
 });

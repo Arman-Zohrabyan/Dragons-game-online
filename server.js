@@ -29,6 +29,7 @@ io.on('connection', function(socket) {
     players[socket.id] = {
       x: coordinateX - coordinateX % 5,
       y: coordinateY - coordinateY % 5,
+      name,
       maxBalls: 1,
       iSprDir: 0,
       iSprPos: 0,
