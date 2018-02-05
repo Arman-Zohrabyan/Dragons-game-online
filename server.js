@@ -48,7 +48,7 @@ io.on('connection', function(socket) {
       });
     }
     if(player.balls.length > 0) {
-      movementBalls(player, movement);
+      movementBalls(player, movement, socket.id);
     }
   });
   socket.on('disconnect', function() {
@@ -79,7 +79,7 @@ function movementPlayer(player, movement) {
 }
 
 
-function movementBalls(player, movement) {
+function movementBalls(player, movement, socketId) {
   var newBalls = [];
   player.balls.forEach(function (ball) {
     if(ball.sprPos === 0) {
@@ -104,7 +104,16 @@ function movementBalls(player, movement) {
       ball.y -= movement.fireSpeed;
     }
 
-    if(ball.x < 1050 && ball.x > -50 && ball.y > -50 && ball.y < 650) {
+    Object.keys(players).forEach(function (playerId) {
+      if(playerId !== socketId) {
+        if(isIntersects(players[playerId], ball)) {
+          delete players[playerId];
+          ball.remove = true;
+        }
+      }
+    });
+
+    if(ball.x < 1030 && ball.x > -30 && ball.y > -30 && ball.y < 630 && !ball.remove) {
       newBalls.push(ball);
     }
   });
@@ -112,6 +121,35 @@ function movementBalls(player, movement) {
   player.balls = newBalls;
 }
 
-function intersects( a, b ) {
-  return ( a.y < b.y1 || a.y1 > b.y || a.x1 < b.x || a.x > b.x1 );
+
+function isIntersects(a,b) {
+  return(
+    (
+      (
+        ( a.x>=b.x && a.x<=b.x+32 )||( (a.x+70)>=b.x && (a.x+70)<=b.x+32  )
+      ) && (
+        ( a.y>=b.y && a.y<=(b.y+32) )||( (a.y+75)>=b.y && (a.y+75)<=(b.y+32) )
+      )
+    )||(
+      (
+        ( b.x>=a.x && b.x<=(a.x+70) )||( b.x+32>=a.x && b.x+32<=(a.x+70)  )
+      ) && (
+        ( b.y>=a.y && b.y<=(a.y+75) )||( (b.y+32)>=a.y && (b.y+32)<=(a.y+75) )
+      )
+    )
+  )||(
+    (
+      (
+        ( a.x>=b.x && a.x<=b.x+32 )||( (a.x+70)>=b.x && (a.x+70)<=b.x+32  )
+      ) && (
+        ( b.y>=a.y && b.y<=(a.y+75) )||( (b.y+32)>=a.y && (b.y+32)<=(a.y+75) )
+      )
+    )||(
+      (
+        ( b.x>=a.x && b.x<=(a.x+70) )||( b.x+32>=a.x && b.x+32<=(a.x+70)  )
+      ) && (
+        ( a.y>=b.y && a.y<=(b.y+32) )||( (a.y+75)>=b.y && (a.y+75)<=(b.y+32) )
+      )
+    )
+  );
 }

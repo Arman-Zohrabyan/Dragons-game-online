@@ -120,37 +120,38 @@ function drawGame() {
     ctx.fillStyle = 'green';
     for (var id in players) {
       var player = players[id];
+      if(!player.hide) {
 
-      // отрисовка дракона
-      ctx.drawImage(
-        oDragonImage,
-        player.iSprPos*dragonW,
-        player.iSprDir*dragonH,
-        dragonW,
-        dragonH,
-        player.x,
-        player.y,
-        dragonW,
-        dragonH
-      );
+        // отрисовка дракона
+        ctx.drawImage(
+          oDragonImage,
+          player.iSprPos*dragonW,
+          player.iSprDir*dragonH,
+          dragonW,
+          dragonH,
+          player.x,
+          player.y,
+          dragonW,
+          dragonH
+        );
 
-      // отрисовка шаров
-      if (player.balls.length > 0) {
-        for (var key = 0; key < player.balls.length; key++) {
-          ctx.drawImage(
-            oBallImage,
-            player.balls[key].sprPos*ballW,
-            0,
-            ballW,
-            ballH,
-            player.balls[key].x,
-            player.balls[key].y,
-            ballCanvasW,
-            ballCanvasH
-          );
+        // отрисовка шаров
+        if (player.balls.length > 0) {
+          for (var key = 0; key < player.balls.length; key++) {
+            ctx.drawImage(
+              oBallImage,
+              player.balls[key].sprPos*ballW,
+              0,
+              ballW,
+              ballH,
+              player.balls[key].x,
+              player.balls[key].y,
+              ballCanvasW,
+              ballCanvasH
+            );
+          }
         }
       }
-
     }
   });
 }
