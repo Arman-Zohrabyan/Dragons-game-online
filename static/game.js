@@ -1,3 +1,4 @@
+var userName = confirm("Write name of your dragon");
 var documentInnerHeight = $(document).height();
 
 var canvas, ctx = null;

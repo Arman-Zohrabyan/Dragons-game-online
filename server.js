@@ -29,6 +29,7 @@ io.on('connection', function(socket) {
     players[socket.id] = {
       x: coordinateX - coordinateX % 5,
       y: coordinateY - coordinateY % 5,
+      maxBalls: 1,
       iSprDir: 0,
       iSprPos: 0,
       balls: []
@@ -40,13 +41,15 @@ io.on('connection', function(socket) {
     player.iSprPos = movement.iSprPos;
 
     movementPlayer(player, movement);
-    if(movement.fire) {
+
+    if(movement.fire && player.balls.length < player.maxBalls) {
       player.balls.push({
         x: player.x + 32,
         y: player.y + 30,
         sprPos: movement.iSprDir
       });
     }
+
     if(player.balls.length > 0) {
       movementBalls(player, movement, socket.id);
     }
@@ -64,16 +67,16 @@ setInterval(function() {
 
 
 function movementPlayer(player, movement) {
-  if (movement.left && player.x > 0+10) {
+  if (movement.left && player.x > 0-5) {
     player.x -= 5;
   }
-  if (movement.up && player.y > 0+10) {
+  if (movement.up && player.y > 0-5) {
     player.y -= 5;
   }
-  if (movement.right && player.x < 1000-10) {
+  if (movement.right && player.x < 1000-75) {
     player.x += 5;
   }
-  if (movement.down && player.y < 600-10) {
+  if (movement.down && player.y < 600-70) {
     player.y += 5;
   }
 }
