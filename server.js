@@ -124,23 +124,22 @@ function movementBalls(player, actions, socketId) {
 
     if(ball.x < 1000 && ball.x > 0 && ball.y > 0 && ball.y < 600 && !ball.hitTheDragon) {
       newBalls.push(ball);
-    }
+      
+      // Проверяем шар попал в игрока или нет (удаляем шар во время следующего рендера)
+      Object.keys(players).forEach(function (playerId) {
+        if(playerId !== socketId) {
+          if(isIntersects(players[playerId], ball)) {
+            players[playerId].health--;
+            ball.hitTheDragon = true;
 
-    // Проверяем шар попал в игрока или нет (удаляем шар во время следующего рендера)
-    Object.keys(players).forEach(function (playerId) {
-      if(playerId !== socketId) {
-        if(isIntersects(players[playerId], ball)) {
-          players[playerId].health--;
-          ball.hitTheDragon = true;
-
-          // Когда здоровье = 0, удаляем игрока.
-          if(players[playerId].health === 0) {
-            delete players[playerId];
+            // Когда здоровье = 0, удаляем игрока.
+            if(players[playerId].health === 0) {
+              delete players[playerId];
+            }
           }
         }
-      }
-    });
-
+      });
+    }
   });
 
   player.balls = newBalls;
