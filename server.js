@@ -20,39 +20,52 @@ server.listen(5000, function() {
 
 
 
+
+
+var initialPlayer = {
+  balls: [],
+  dragonSpritePos: {}
+};
+
 var players = {};
 
 io.on('connection', function(socket) {
   socket.on('new player', function(userData) {
     let coordinateX = parseInt(Math.random()*userData.x);
     let coordinateY = parseInt(Math.random()*userData.y);
+
     players[socket.id] = {
+      balls: [],
+      dragonSpritePos: {
+        vertical: 0,
+        horizontal: 0
+      },
       x: coordinateX - coordinateX % 5,
       y: coordinateY - coordinateY % 5,
       dragonName: userData.dragonName,
       maxBalls: 1,
-      iSprDir: 0,
-      iSprPos: 0,
-      balls: []
+      health: 5,
     };
   });
-  socket.on('movement', function(movement) {
-    var player = players[socket.id] || {balls: []};
-    player.iSprDir = movement.iSprDir;
-    player.iSprPos = movement.iSprPos;
+  socket.on('actions', function(actions) {
+    var { movement, spritePositions } = actions;
+    var player = players[socket.id] || Object.assign({}, initialPlayer);
+
+    player.dragonSpritePos.vertical = spritePositions.vertical;
+    player.dragonSpritePos.horizontal = spritePositions.horizontal;
 
     movementPlayer(player, movement);
 
-    if(movement.fire && player.balls.length < player.maxBalls) {
+    if(actions.fire && player.balls.length < player.maxBalls) {
       player.balls.push({
         x: player.x + 32,
         y: player.y + 30,
-        sprPos: movement.iSprDir
+        sprPos: spritePositions.vertical
       });
     }
 
     if(player.balls.length > 0) {
-      movementBalls(player, movement, socket.id);
+      movementBalls(player, actions, socket.id);
     }
   });
   socket.on('disconnect', function() {
@@ -63,6 +76,7 @@ io.on('connection', function(socket) {
 setInterval(function() {
   io.sockets.emit('state', players);
 }, 1000 / 60);
+
 
 
 
@@ -83,47 +97,56 @@ function movementPlayer(player, movement) {
 }
 
 
-function movementBalls(player, movement, socketId) {
+function movementBalls(player, actions, socketId) {
   var newBalls = [];
   player.balls.forEach(function (ball) {
     if(ball.sprPos === 0) {
-      ball.x += movement.fireSpeed;
+      ball.x += actions.fireSpeed;
     } else if (ball.sprPos === 1) {
-      ball.x += movement.fireSpeed;
-      ball.y += movement.fireSpeed;
+      ball.x += actions.fireSpeed;
+      ball.y += actions.fireSpeed;
     } else if (ball.sprPos === 2) {
-      ball.y += movement.fireSpeed;
+      ball.y += actions.fireSpeed;
     } else if (ball.sprPos === 3) {
-      ball.x -= movement.fireSpeed;
-      ball.y += movement.fireSpeed;
+      ball.x -= actions.fireSpeed;
+      ball.y += actions.fireSpeed;
     } else if (ball.sprPos === 4) {
-      ball.x -= movement.fireSpeed;
+      ball.x -= actions.fireSpeed;
     } else if (ball.sprPos === 5) {
-      ball.x -= movement.fireSpeed;
-      ball.y -= movement.fireSpeed;
+      ball.x -= actions.fireSpeed;
+      ball.y -= actions.fireSpeed;
     } else if (ball.sprPos === 6) {
-      ball.y -= movement.fireSpeed;
+      ball.y -= actions.fireSpeed;
     } else if (ball.sprPos === 7) {
-      ball.x += movement.fireSpeed;
-      ball.y -= movement.fireSpeed;
+      ball.x += actions.fireSpeed;
+      ball.y -= actions.fireSpeed;
     }
 
+    if(ball.x < 1000 && ball.x > 0 && ball.y > 0 && ball.y < 600 && !ball.hitTheDragon) {
+      newBalls.push(ball);
+    }
+
+    // Проверяем шар попал в игрока или нет (удаляем шар во время следующего рендера)
     Object.keys(players).forEach(function (playerId) {
       if(playerId !== socketId) {
         if(isIntersects(players[playerId], ball)) {
-          delete players[playerId];
-          ball.remove = true;
+          players[playerId].health--;
+          ball.hitTheDragon = true;
+
+          // Когда здоровье = 0, удаляем игрока.
+          if(players[playerId].health === 0) {
+            delete players[playerId];
+          }
         }
       }
     });
 
-    if(ball.x < 1000 && ball.x > 0 && ball.y > 0 && ball.y < 600 && !ball.remove) {
-      newBalls.push(ball);
-    }
   });
 
   player.balls = newBalls;
 }
+
+
 
 
 function isIntersects(a,b) {

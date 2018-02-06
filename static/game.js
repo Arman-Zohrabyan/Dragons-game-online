@@ -1,39 +1,47 @@
+// Ввод названия Дракона.
 var dragonName = localStorage.getItem("dragonName");
 if(dragonName === null) {
-  dragonName = prompt("Write name of your dragon") || "Undefined Dragon";
+  dragonName = prompt("Write name of your dragon. \n\n" +
+    "Движение:  A,S,D,W      либо     СТРЕЛАМИ\n" + 
+    "Атака: J\n\n" + 
+    "Для вашего удобства, после начала игры, нажмит F11 для полноэкранного режима и обновите игру с помощью CTRL+R.\n\n\n" +
+    "Спасибо за внимание :)") || "Undefined Dragon";
   localStorage.setItem("dragonName", dragonName);
 }
 
-
+// внутренняя высота экрана.
 var documentInnerHeight = $(document).height();
-
-var canvas, ctx = null;
-
-var dragonW = 75; // ширина дракона
-var dragonH = 70; // высота дракона
-
-var ballW = 32; // ширина шара
-var ballH = 32; // высота шара
-var ballCanvasW = 16; // будет нарисован шара с шириной 
-var ballCanvasH = 16; // будет нарисован шара с высотой 
-var iBallSpeed = 10; // скорость шаров
-
-var movement = {
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-  iSprDir: 0,
-  iSprPos: 0,
-  fire: false,
-  fireSpeed: iBallSpeed
-};
-
-
 
 // Подкулючаем веб-сокет.
 var socket = io();
 
+// глобальные переменные для канваса.
+var canvas, ctx = null;
+
+var dragonW = 75; // ширина дракона
+var dragonH = 70; // высота дракона
+var ballW = 32; // ширина шара в спрайте
+var ballH = 32; // высота шара в спрайте
+var ballCanvasW = 16; // будет нарисован шар с шириной 
+var ballCanvasH = 16; // будет нарисован шар с высотой 
+var iBallSpeed = 10; // скорость шаров
+
+
+// Действия игрока
+var actions = {
+  movement: {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+  },
+  spritePositions: {
+    vertical: 0,
+    horizontal: 0
+  },
+  fire: false,
+  fireSpeed: iBallSpeed
+};
 
 
 // Инициализация картинку дракона.
@@ -49,12 +57,14 @@ oBallImage.onload = function() {};
 // Инициализвция картинку заднего фона.
 backgroundImage = new Image();
 backgroundImage.src = '/static/images/background.jpg';
-backgroundImage.onload = function() {
-}
+backgroundImage.onload = function() {};
 
 
+// Функция определяет вертикальную позицию для спрайта дракона.
+function getSpriteVerticalPosition() {
+  var movement = actions.movement;
+  var spritePositions = actions.spritePositions;
 
-function getSprPosition() {
   if(movement.up && movement.right) {
     return 7;
   } else if(movement.down && movement.right) {
@@ -72,59 +82,60 @@ function getSprPosition() {
   } else if(movement.down) {
     return 2;
   }
-  return movement.iSprDir;
+  return spritePositions.vertical;
 }
 
-//обработчик событий
+// Обработчики событий.
 function hendlerEvents() {
   $(document).on('keydown', function(event) {
     var code = event.keyCode;
     if(code === 37 || code === 65) {         // left || A
-      movement.left = true;
-      movement.iSprDir = getSprPosition();
+      actions.movement.left = true;
     } else if (code === 38 || code === 87) { // up || W
-      movement.up = true;
-      movement.iSprDir = getSprPosition();
+      actions.movement.up = true;
     } else if (code === 39 || code === 68) { // right || D
-      movement.right = true;
-      movement.iSprDir = getSprPosition();
+      actions.movement.right = true;
     } else if (code === 40 || code === 83) { // down || S
-      movement.down = true;
-      movement.iSprDir = getSprPosition();
+      actions.movement.down = true;
     }
+    actions.spritePositions.vertical = getSpriteVerticalPosition();
   });
+
   $(document).on('keyup', function(event) {
     var code = event.keyCode;
     if(code === 37 || code === 65) {         // left || A
-      movement.left = false;
-      movement.iSprDir = getSprPosition();
+      actions.movement.left = false;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 38 || code === 87) { // up || W
-      movement.up = false;
-      movement.iSprDir = getSprPosition();
+      actions.movement.up = false;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 39 || code === 68) { // right || D
-      movement.right = false;
-      movement.iSprDir = getSprPosition();
+      actions.movement.right = false;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 40 || code === 83) { // down || S
-      movement.down = false;
-      movement.iSprDir = getSprPosition();
+      actions.movement.down = false;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 74) {                // 74 = J, 75=K, 76=L
-      movement.fire = true;
+      actions.fire = true;
     }
   });
 }
 
-// Обработчик движения игрока
-function handlerOfPlayerMovement() {
+// Обработчик движения игрока.
+function handlerOfPlayerActions() {
   setInterval(function() {
-    if (movement.iSprPos === 9) {
-      movement.iSprPos = 0;
+    if (actions.spritePositions.horizontal === 9) {
+      actions.spritePositions.horizontal = 0;
     } else {
-      movement.iSprPos = movement.iSprPos+1;
+      actions.spritePositions.horizontal++;
     }
-    socket.emit('movement', movement);
-    movement.fire = false;
+    socket.emit('actions', actions);
+    actions.fire = false;
   }, 1000 / 60);
 }
+
+
+
 
 
 // Отрисовка игры.
@@ -133,53 +144,59 @@ function drawGame() {
     ctx.clearRect(0, 0, 1100, 600);
     ctx.textAlign = "center";
 
+    // Задний фон.
     ctx.drawImage(backgroundImage, 0, 0, 1000, 600);
 
     for (var id in players) {
       var player = players[id];
-      if(!player.hide) {
 
+      // Отрисовка дракона.
+      ctx.drawImage(
+        oDragonImage,
+        player.dragonSpritePos.horizontal*dragonW,
+        player.dragonSpritePos.vertical*dragonH,
+        dragonW,
+        dragonH,
+        player.x,
+        player.y,
+        dragonW,
+        dragonH
+      );
 
-        // отрисовка дракона
-        ctx.drawImage(
-          oDragonImage,
-          player.iSprPos*dragonW,
-          player.iSprDir*dragonH,
-          dragonW,
-          dragonH,
-          player.x,
-          player.y,
-          dragonW,
-          dragonH
-        );
-
-        // отрисовка шаров
-        if (player.balls.length > 0) {
-          for (var key = 0; key < player.balls.length; key++) {
-            ctx.drawImage(
-              oBallImage,
-              player.balls[key].sprPos*ballW,
-              0,
-              ballW,
-              ballH,
-              player.balls[key].x,
-              player.balls[key].y,
-              ballCanvasW,
-              ballCanvasH
-            );
-          }
+      // Отрисовка шаров.
+      if (player.balls.length > 0) {
+        for (var key = 0; key < player.balls.length; key++) {
+          ctx.drawImage(
+            oBallImage,
+            player.balls[key].sprPos*ballW,
+            0,
+            ballW,
+            ballH,
+            player.balls[key].x,
+            player.balls[key].y,
+            ballCanvasW,
+            ballCanvasH
+          );
         }
-
-        ctx.font = '10px Verdana';
-        ctx.fillStyle = '#FF8C00';
-        ctx.fillText(player.dragonName, player.x+38, player.y);
-        ctx.fillStyle = '#BDB76B';
-        ctx.fillRect(1000, 0, 100, 600);
       }
-      ctx.font = '18px Verdana';
-      ctx.fillStyle = '#191970';
-      ctx.fillText("Игроки", 1050, 20);
+
+      ctx.font = '10px Verdana';
+      ctx.fillStyle = '#FF8C00';
+      if(id === socket.id) {
+        ctx.font = '14px Verdana';
+        ctx.fillStyle = '#006400';
+      }
+      // Название дракона.
+      ctx.fillText(player.dragonName + " : " + player.health, player.x+35, player.y);
+      ctx.fillStyle = '#BDB76B';
+      // Правое меню.
+      ctx.fillRect(1000, 0, 100, 600);
     }
+
+    ctx.font = '18px Verdana';
+    ctx.fillStyle = '#191970';
+    // Текст правого меню.
+    ctx.fillText("Игроки", 1050, 20);
   });
 }
 
@@ -199,12 +216,12 @@ $(document).ready(function () {
   // Добавляем нового игрока.
   socket.emit('new player', {x: 1000, y: 600, dragonName});
 
-  // обработчик событий
+  // Добавляем обработчик событий.
   hendlerEvents();
 
-  // Добавляем обработчик движения игрока
-  handlerOfPlayerMovement();
+  // Добавляем обработчик движения игрока.
+  handlerOfPlayerActions();
 
-  // Рисовка игру
+  // Рисовка игры.
   drawGame();
 });
