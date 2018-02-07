@@ -56,6 +56,10 @@ io.on('connection', function(socket) {
 
     movementPlayer(player, movement);
 
+    if(actions.setNewNameForDragon) {
+      player.dragonName = actions.setNewNameForDragon;
+    }
+
     if(actions.fire && player.balls.length < player.maxBalls) {
       player.balls.push({
         x: player.x + 32,

@@ -9,6 +9,11 @@ if(dragonName === null) {
   localStorage.setItem("dragonName", dragonName);
 }
 
+// Временная подсказка.
+var hint = "Движение:  A,S,D,W либо СТРЕЛАМИ. Атака: J";
+setTimeout( function() { hint = "Для того, что бы изменить название дракона - нажмите: P"; }, 10000)
+setTimeout( function() { hint = ""; }, 20000)
+
 // внутренняя высота экрана.
 var documentInnerHeight = $(document).height();
 
@@ -24,7 +29,7 @@ var ballW = 32; // ширина шара в спрайте
 var ballH = 32; // высота шара в спрайте
 var ballCanvasW = 16; // будет нарисован шар с шириной 
 var ballCanvasH = 16; // будет нарисован шар с высотой 
-var iBallSpeed = 10; // скорость шаров
+var iBallSpeed = 8; // скорость шаров
 
 
 // Действия игрока
@@ -40,7 +45,8 @@ var actions = {
     horizontal: 0
   },
   fire: false,
-  fireSpeed: iBallSpeed
+  fireSpeed: iBallSpeed,
+  setNewNameForDragon: '',
 };
 
 
@@ -91,14 +97,17 @@ function hendlerEvents() {
     var code = event.keyCode;
     if(code === 37 || code === 65) {         // left || A
       actions.movement.left = true;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 38 || code === 87) { // up || W
       actions.movement.up = true;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 39 || code === 68) { // right || D
       actions.movement.right = true;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 40 || code === 83) { // down || S
       actions.movement.down = true;
+      actions.spritePositions.vertical = getSpriteVerticalPosition();
     }
-    actions.spritePositions.vertical = getSpriteVerticalPosition();
   });
 
   $(document).on('keyup', function(event) {
@@ -117,6 +126,9 @@ function hendlerEvents() {
       actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 74) {                // 74 = J, 75=K, 76=L
       actions.fire = true;
+    } else if (code === 80) {                // 80=P
+      actions.setNewNameForDragon = prompt("Write name of your dragon") || "Undefined Dragon";
+      localStorage.setItem("dragonName", actions.setNewNameForDragon);
     }
   });
 }
@@ -204,13 +216,17 @@ function drawGame() {
         ctx.strokeStyle = '#DC143C';
       }
       var i = 0;
+      ctx.beginPath();
+      // Рисовка здоровья дракона. Круги.
       for(var i = 0; i < player.health; i++) {
-        ctx.beginPath();
         ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
-        ctx.closePath();
         ctx.fill();
       }
+      ctx.closePath();
+
+
       ctx.fillStyle = "rgba(255, 255, 255, 0)";
+      // Рисовка здоровья дракона. Окружности.
       for(i; i < 5; i++) {
         ctx.beginPath();
         ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
@@ -219,13 +235,6 @@ function drawGame() {
         ctx.lineWidth = 1;
         ctx.stroke();
       }
-
-
-
-
-
-
-
 
 
       ctx.fillStyle = '#BDB76B';
@@ -237,6 +246,12 @@ function drawGame() {
     ctx.fillStyle = '#191970';
     // Текст правого меню.
     ctx.fillText("Игроки", 1050, 20);
+
+    // Подсказка.
+    ctx.font = '15px Verdana';
+    ctx.textAlign = "start";
+    ctx.fillStyle = '#FFF';
+    ctx.fillText(hint, 5, 595);
   });
 }
 
