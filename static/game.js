@@ -1,19 +1,27 @@
 // Ввод названия Дракона.
 var dragonName = localStorage.getItem("dragonName");
 if(dragonName === null) {
-  dragonName = prompt("Write name of your dragon. \n\n" +
-    "Движение:  A,S,D,W      либо     СТРЕЛАМИ\n" + 
+  dragonName = prompt("Напишите название вашего Дракона что бы начать игру. \n\n" +
+    "Передвижение: A,S,D,W      либо     СТРЕЛАМИ\n" + 
+    "Воскресить дракона:  R\n" + 
     "Атака: J\n\n" + 
-    "Для вашего удобства, после начала игры, нажмит F11 для полноэкранного режима и обновите игру с помощью CTRL+R.\n\n\n" +
+    "Для вашего удобства, после начала игры, нажмите F11 для полноэкранного режима и обновите игру с помощью CTRL+R.\n\n\n" +
     "Спасибо за внимание :)") || "Undefined Dragon";
   localStorage.setItem("dragonName", dragonName);
 }
 
 // Временная подсказка.
-var hint = "Движение:  A,S,D,W либо СТРЕЛАМИ. Атака: J";
-setTimeout( function() { hint = "Для того, что бы изменить название дракона - нажмите: P"; }, 10000);
-setTimeout( function() { hint = "Каждый раз когда Вы убивайте врага, скорость вашей атаки увелечивается. Максимальная скорость после 15 убийств."; }, 20000);
-setTimeout( function() { hint = ""; }, 30000);
+var hint = "Передвижение:  A,S,D,W либо СТРЕЛАМИ ////////////////// Атака: J ////////////////// Воскресить дракона: R ////////////////// Игра в стадии разработки.";
+
+setTimeout( function() {
+hint = "Для того, что бы изменить название дракона - нажмите P";
+setTimeout(function() {
+hint = "Каждый раз когда Вы убивайте врага, скорость вашей атаки увелечивается + добавляется 1 здоровье. Максимальная скорость после 15 убийств.";
+setTimeout( function() {
+hint = "Чего не хватает в игре по вашему ? Нажмите I, пишите чего бы Вы хотели увидеть. Karaq @senc hayerenel greq )";
+}, 10000);
+}, 10000);
+}, 10000);
 
 // внутренняя высота экрана.
 var documentInnerHeight = $(document).height();
@@ -128,7 +136,15 @@ function hendlerEvents() {
       actions.fire = true;
     } else if (code === 80) {                // 80=P
       actions.setNewNameForDragon = prompt("Write name of your dragon") || "Undefined Dragon";
-      localStorage.setItem("dragonName", actions.setNewNameForDragon);
+      dragonName = actions.setNewNameForDragon;
+      localStorage.setItem("dragonName", dragonName);
+    } else if (code === 73) {                // 73=I
+      var idea = prompt("Ваша идея?");
+      if(idea) {
+        socket.emit("new idea", dragonName, idea);
+      }
+    } else if (code === 82) {                // 82=R
+      location.reload();
     }
   });
 }
@@ -203,10 +219,7 @@ function drawGame() {
       }
 
       // Рисовка здоровья дракона. Круги.
-      if(player.health === 5) {
-        ctx.fillStyle = '#7FFF00';
-        ctx.strokeStyle = '#7FFF00';
-      } else if (player.health === 4) {
+      if (player.health === 4) {
         ctx.fillStyle = '#228B22';
         ctx.strokeStyle = '#228B22';
       } else if (player.health === 3) {
@@ -218,6 +231,9 @@ function drawGame() {
       } else if (player.health === 1) {
         ctx.fillStyle = '#DC143C';
         ctx.strokeStyle = '#DC143C';
+      } else {
+        ctx.fillStyle = '#7FFF00';
+        ctx.strokeStyle = '#7FFF00';
       }
       var i = 0;
       ctx.beginPath();

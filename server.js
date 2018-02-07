@@ -2,6 +2,8 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var socketIO = require('socket.io');
+var fs = require('fs');
+var stream = fs.createWriteStream("ideas.txt");
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
@@ -16,8 +18,6 @@ app.get('/', function(request, response) {
 server.listen(5000, function() {
   console.log('Starting server on port 5000');
 });
-
-
 
 
 
@@ -37,8 +37,8 @@ io.on('connection', function(socket) {
         vertical: 0,
         horizontal: 0
       },
-      x: generateRandomNumber(userData.x),
-      y: generateRandomNumber(userData.y),
+      x: generateRandomNumber(userData.x-75),
+      y: generateRandomNumber(userData.y-70),
       dragonName: userData.dragonName,
       maxBalls: 1,
       health: 5,
@@ -46,6 +46,7 @@ io.on('connection', function(socket) {
       enemiesKilled: 0,
     };
   });
+
   socket.on('actions', function(actions) {
     var { movement, spritePositions } = actions;
     var player = players[socket.id] || Object.assign({}, initialPlayer);
@@ -71,6 +72,11 @@ io.on('connection', function(socket) {
       movementBalls(player, socket.id);
     }
   });
+
+  socket.on('new idea', function(dragonName, idea) {
+    stream.write(JSON.stringify({[dragonName]: idea}) + "\n");
+  });
+
   socket.on('disconnect', function() {
     delete players[socket.id];
   });
@@ -138,6 +144,10 @@ function movementBalls(player, socketId) {
             // Когда здоровье = 0, удаляем игрока.
             if(players[playerId].health === 0) {
               player.enemiesKilled++;
+
+              if(player.health < 10) {
+                player.health++;
+              }
 
               if(player.fireSpeed < 38) {                
                 player.fireSpeed+=2;
