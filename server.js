@@ -139,7 +139,7 @@ function movementBalls(player, socketId) {
             if(players[playerId].health === 0) {
               player.enemiesKilled++;
 
-              if(player.fireSpeed < 30) {                
+              if(player.fireSpeed < 38) {                
                 player.fireSpeed+=2;
               }
 
