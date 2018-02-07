@@ -164,30 +164,70 @@ function drawGame() {
       );
 
       // Отрисовка шаров.
-      if (player.balls.length > 0) {
-        for (var key = 0; key < player.balls.length; key++) {
-          ctx.drawImage(
-            oBallImage,
-            player.balls[key].sprPos*ballW,
-            0,
-            ballW,
-            ballH,
-            player.balls[key].x,
-            player.balls[key].y,
-            ballCanvasW,
-            ballCanvasH
-          );
-        }
+      for (var key = 0; key < player.balls.length; key++) {
+        ctx.drawImage(
+          oBallImage,
+          player.balls[key].sprPos*ballW,
+          0,
+          ballW,
+          ballH,
+          player.balls[key].x,
+          player.balls[key].y,
+          ballCanvasW,
+          ballCanvasH
+        );
       }
 
-      ctx.font = '10px Verdana';
+      ctx.font = '12px Verdana';
       ctx.fillStyle = '#FF8C00';
       if(id === socket.id) {
         ctx.font = '14px Verdana';
-        ctx.fillStyle = '#006400';
+        ctx.fillStyle = '#7FFF00';
       }
       // Название дракона.
-      ctx.fillText(player.dragonName + " : " + player.health, player.x+35, player.y);
+      ctx.fillText(player.dragonName, player.x+38, player.y-8);
+
+      if(player.health === 5) {
+        ctx.fillStyle = '#7FFF00';
+        ctx.strokeStyle = '#7FFF00';
+      } else if (player.health === 4) {
+        ctx.fillStyle = '#228B22';
+        ctx.strokeStyle = '#228B22';
+      } else if (player.health === 3) {
+        ctx.fillStyle = '#FF8C00';
+        ctx.strokeStyle = '#FF8C00';
+      } else if (player.health === 2) {
+        ctx.fillStyle = '#A0522D';
+        ctx.strokeStyle = '#A0522D';
+      } else if (player.health === 1) {
+        ctx.fillStyle = '#DC143C';
+        ctx.strokeStyle = '#DC143C';
+      }
+      var i = 0;
+      for(var i = 0; i < player.health; i++) {
+        ctx.beginPath();
+        ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.fillStyle = "rgba(255, 255, 255, 0)";
+      for(i; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+
+
+
+
+
+
+
+
       ctx.fillStyle = '#BDB76B';
       // Правое меню.
       ctx.fillRect(1000, 0, 100, 600);

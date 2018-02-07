@@ -3,6 +3,7 @@
   "author": "Arman-Zohrabyan",
   "version": "1.0.0",
   "description": "Online shooting game. Written in Canvas and NodeJS.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Arman-Zohrabyan/Dragons-game-online.git"
