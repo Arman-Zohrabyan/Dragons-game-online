@@ -31,20 +31,19 @@ var players = {};
 
 io.on('connection', function(socket) {
   socket.on('new player', function(userData) {
-    let coordinateX = parseInt(Math.random()*userData.x);
-    let coordinateY = parseInt(Math.random()*userData.y);
-
     players[socket.id] = {
       balls: [],
       dragonSpritePos: {
         vertical: 0,
         horizontal: 0
       },
-      x: coordinateX - coordinateX % 5,
-      y: coordinateY - coordinateY % 5,
+      x: generateRandomNumber(userData.x),
+      y: generateRandomNumber(userData.y),
       dragonName: userData.dragonName,
       maxBalls: 1,
       health: 5,
+      fireSpeed: 8,
+      enemiesKilled: 0,
     };
   });
   socket.on('actions', function(actions) {
@@ -69,7 +68,7 @@ io.on('connection', function(socket) {
     }
 
     if(player.balls.length > 0) {
-      movementBalls(player, actions, socket.id);
+      movementBalls(player, socket.id);
     }
   });
   socket.on('disconnect', function() {
@@ -101,29 +100,29 @@ function movementPlayer(player, movement) {
 }
 
 
-function movementBalls(player, actions, socketId) {
+function movementBalls(player, socketId) {
   var newBalls = [];
   player.balls.forEach(function (ball) {
     if(ball.sprPos === 0) {
-      ball.x += actions.fireSpeed;
+      ball.x += player.fireSpeed;
     } else if (ball.sprPos === 1) {
-      ball.x += actions.fireSpeed;
-      ball.y += actions.fireSpeed;
+      ball.x += player.fireSpeed;
+      ball.y += player.fireSpeed;
     } else if (ball.sprPos === 2) {
-      ball.y += actions.fireSpeed;
+      ball.y += player.fireSpeed;
     } else if (ball.sprPos === 3) {
-      ball.x -= actions.fireSpeed;
-      ball.y += actions.fireSpeed;
+      ball.x -= player.fireSpeed;
+      ball.y += player.fireSpeed;
     } else if (ball.sprPos === 4) {
-      ball.x -= actions.fireSpeed;
+      ball.x -= player.fireSpeed;
     } else if (ball.sprPos === 5) {
-      ball.x -= actions.fireSpeed;
-      ball.y -= actions.fireSpeed;
+      ball.x -= player.fireSpeed;
+      ball.y -= player.fireSpeed;
     } else if (ball.sprPos === 6) {
-      ball.y -= actions.fireSpeed;
+      ball.y -= player.fireSpeed;
     } else if (ball.sprPos === 7) {
-      ball.x += actions.fireSpeed;
-      ball.y -= actions.fireSpeed;
+      ball.x += player.fireSpeed;
+      ball.y -= player.fireSpeed;
     }
 
     if(ball.x < 1000 && ball.x > 0 && ball.y > 0 && ball.y < 600 && !ball.hitTheDragon) {
@@ -138,6 +137,12 @@ function movementBalls(player, actions, socketId) {
 
             // Когда здоровье = 0, удаляем игрока.
             if(players[playerId].health === 0) {
+              player.enemiesKilled++;
+
+              if(player.fireSpeed < 30) {                
+                player.fireSpeed+=2;
+              }
+
               delete players[playerId];
             }
           }
@@ -182,4 +187,11 @@ function isIntersects(a,b) {
       )
     )
   );
+}
+
+
+// Генерирует рандомное число в интервале от 0 до distance, которое делится на 5.
+function generateRandomNumber(distance) {
+  var random = Math.random();
+  return random*distance - random*distance%5;
 }

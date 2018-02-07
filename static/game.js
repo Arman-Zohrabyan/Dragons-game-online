@@ -11,8 +11,9 @@ if(dragonName === null) {
 
 // Временная подсказка.
 var hint = "Движение:  A,S,D,W либо СТРЕЛАМИ. Атака: J";
-setTimeout( function() { hint = "Для того, что бы изменить название дракона - нажмите: P"; }, 10000)
-setTimeout( function() { hint = ""; }, 20000)
+setTimeout( function() { hint = "Для того, что бы изменить название дракона - нажмите: P"; }, 10000);
+setTimeout( function() { hint = "Каждый раз когда Вы убивайте врага, скорость вашей атаки увелечивается."; }, 20000);
+setTimeout( function() { hint = ""; }, 30000);
 
 // внутренняя высота экрана.
 var documentInnerHeight = $(document).height();
@@ -45,7 +46,6 @@ var actions = {
     horizontal: 0
   },
   fire: false,
-  fireSpeed: iBallSpeed,
   setNewNameForDragon: '',
 };
 
@@ -175,6 +175,18 @@ function drawGame() {
         dragonH
       );
 
+      ctx.font = '12px Verdana';
+      ctx.fillStyle = '#FF8C00';
+      if(id === socket.id) {
+        ctx.font = '14px Verdana';
+        ctx.fillStyle = '#7FFF00';
+      }
+
+      // Название дракона + Колличество убитых врагов.
+      var enemiesKilled = player.enemiesKilled ? (" +" + player.enemiesKilled) : '';
+      ctx.fillText(player.dragonName + enemiesKilled, player.x+38, player.y-8);
+
+
       // Отрисовка шаров.
       for (var key = 0; key < player.balls.length; key++) {
         ctx.drawImage(
@@ -190,15 +202,7 @@ function drawGame() {
         );
       }
 
-      ctx.font = '12px Verdana';
-      ctx.fillStyle = '#FF8C00';
-      if(id === socket.id) {
-        ctx.font = '14px Verdana';
-        ctx.fillStyle = '#7FFF00';
-      }
-      // Название дракона.
-      ctx.fillText(player.dragonName, player.x+38, player.y-8);
-
+      // Рисовка здоровья дракона. Круги.
       if(player.health === 5) {
         ctx.fillStyle = '#7FFF00';
         ctx.strokeStyle = '#7FFF00';
@@ -217,16 +221,13 @@ function drawGame() {
       }
       var i = 0;
       ctx.beginPath();
-      // Рисовка здоровья дракона. Круги.
       for(var i = 0; i < player.health; i++) {
         ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
         ctx.fill();
       }
       ctx.closePath();
-
-
-      ctx.fillStyle = "rgba(255, 255, 255, 0)";
       // Рисовка здоровья дракона. Окружности.
+      ctx.fillStyle = "rgba(255, 255, 255, 0)";
       for(i; i < 5; i++) {
         ctx.beginPath();
         ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
@@ -236,19 +237,18 @@ function drawGame() {
         ctx.stroke();
       }
 
-
-      ctx.fillStyle = '#BDB76B';
       // Правое меню.
+      ctx.fillStyle = '#BDB76B';
       ctx.fillRect(1000, 0, 100, 600);
     }
 
+    // Текст правого меню.
     ctx.font = '18px Verdana';
     ctx.fillStyle = '#191970';
-    // Текст правого меню.
     ctx.fillText("Игроки", 1050, 20);
 
     // Подсказка.
-    ctx.font = '15px Verdana';
+    ctx.font = '16px Verdana';
     ctx.textAlign = "start";
     ctx.fillStyle = '#FFF';
     ctx.fillText(hint, 5, 595);
