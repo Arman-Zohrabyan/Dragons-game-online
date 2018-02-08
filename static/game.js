@@ -53,7 +53,10 @@ var actions = {
     vertical: 0,
     horizontal: 0
   },
-  fire: false,
+  supportive: {
+    fire: false,
+    shield: false
+  },
   setNewNameForDragon: '',
 };
 
@@ -132,8 +135,10 @@ function hendlerEvents() {
     } else if (code === 40 || code === 83) { // down || S
       actions.movement.down = false;
       actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 74) {                // 74 = J, 75=K, 76=L
-      actions.fire = true;
+    } else if (code === 74) {                // 74 = J
+      actions.supportive.fire = true;
+    } else if (code === 75) {                // 75=K, 76=L
+      actions.supportive.shield = true;
     } else if (code === 80) {                // 80=P
       actions.setNewNameForDragon = prompt("Write name of your dragon") || "Undefined Dragon";
       dragonName = actions.setNewNameForDragon;
@@ -158,7 +163,10 @@ function handlerOfPlayerActions() {
       actions.spritePositions.horizontal++;
     }
     socket.emit('actions', actions);
-    actions.fire = false;
+
+    actions.supportive.fire = false;
+    actions.supportive.shield = false;
+
   }, 1000 / 60);
 }
 
@@ -201,6 +209,19 @@ function drawGame() {
       // Название дракона + Колличество убитых врагов.
       var enemiesKilled = player.enemiesKilled ? (" +" + player.enemiesKilled) : '';
       ctx.fillText(player.dragonName + enemiesKilled, player.x+38, player.y-8);
+
+
+      if(player.shield) {
+        // отрисовка щита дракона
+        ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
+        ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
+        ctx.beginPath();
+        ctx.arc(player.x+38, player.y+35, 40, 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.stroke();
+      }
 
 
       // Отрисовка шаров.

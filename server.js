@@ -24,7 +24,8 @@ server.listen(5000, function() {
 
 var initialPlayer = {
   balls: [],
-  dragonSpritePos: {}
+  dragonSpritePos: {},
+  supportive: {}
 };
 
 var players = {};
@@ -37,18 +38,22 @@ io.on('connection', function(socket) {
         vertical: 0,
         horizontal: 0
       },
+      supportive: {
+        maxBalls: 1,
+        shieldsCount: 1,
+      },
       x: generateRandomNumber(userData.x-75),
       y: generateRandomNumber(userData.y-70),
       dragonName: userData.dragonName,
-      maxBalls: 1,
       health: 5,
       fireSpeed: 8,
       enemiesKilled: 0,
+      shield: false,
     };
   });
 
   socket.on('actions', function(actions) {
-    var { movement, spritePositions } = actions;
+    var { movement, spritePositions, supportive } = actions;
     var player = players[socket.id] || Object.assign({}, initialPlayer);
 
     player.dragonSpritePos.vertical = spritePositions.vertical;
@@ -60,7 +65,7 @@ io.on('connection', function(socket) {
       player.dragonName = actions.setNewNameForDragon;
     }
 
-    if(actions.fire && player.balls.length < player.maxBalls) {
+    if(supportive.fire && player.balls.length < player.supportive.maxBalls) {
       player.balls.push({
         x: player.x + 32,
         y: player.y + 30,
@@ -70,6 +75,10 @@ io.on('connection', function(socket) {
 
     if(player.balls.length > 0) {
       movementBalls(player, socket.id);
+    }
+
+    if(supportive.shield && player.supportive.shieldsCount > 0) {
+      activateShield(player);
     }
   });
 
@@ -138,8 +147,12 @@ function movementBalls(player, socketId) {
       Object.keys(players).forEach(function (playerId) {
         if(playerId !== socketId) {
           if(isIntersects(players[playerId], ball)) {
-            players[playerId].health--;
             ball.hitTheDragon = true;
+
+            // Если у игрока не ставлен щит, отнимает единицу здоровья
+            if(!players[playerId].shield) {
+              players[playerId].health--;
+            }
 
             // Когда здоровье = 0, удаляем игрока.
             if(players[playerId].health === 0) {
@@ -164,7 +177,13 @@ function movementBalls(player, socketId) {
   player.balls = newBalls;
 }
 
-
+function activateShield(player) {
+  player.supportive.shieldsCount--;
+  player.shield = true;
+  setTimeout(function () {
+    player.shield = false;
+  }, 6000);
+}
 
 
 function isIntersects(a,b) {
