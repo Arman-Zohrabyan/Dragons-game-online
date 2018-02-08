@@ -149,7 +149,7 @@ function hendlerEvents() {
         socket.emit("new idea", dragonName, idea);
       }
     } else if (code === 82) {                // 82=R
-      location.reload();
+      socket.emit('new player', {x: 1000, y: 600, dragonName});
     }
   });
 }
