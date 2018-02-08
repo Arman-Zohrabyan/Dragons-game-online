@@ -73,7 +73,8 @@ io.on('connection', function(socket) {
     }
 
     // Запускаем шар (если максимальное колличество шаров не было уже запущено).
-    if(capability.fire && player.balls.length < player.capability.maxBalls) {
+    // TODO: проблема с проверкой, надо проверить capability && 
+    if(capability && capability.fire && player.balls.length < player.capability.maxBalls) {
       player.balls.push({
         x: player.x + 32,
         y: player.y + 30,
@@ -87,7 +88,8 @@ io.on('connection', function(socket) {
     }
 
     // Если есть в складе запасной щит и щит не включен, активизируем щит.
-    if(capability.shield && !player.shield && player.capability.shieldsCount > 0) {
+    // TODO: проблема с проверкой, надо проверить capability && 
+    if(capability && capability.shield && !player.shield && player.capability.shieldsCount > 0) {
       activateShield(player);
     }
   });
