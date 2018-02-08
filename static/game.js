@@ -4,14 +4,14 @@ if(dragonName === null) {
   dragonName = prompt("Напишите название вашего Дракона что бы начать игру. \n\n" +
     "Передвижение: A,S,D,W      либо     СТРЕЛАМИ\n" + 
     "Воскресить дракона:  R\n" + 
-    "Атака: J\n\n" + 
+    "Атака: J / Щит: K\n\n" + 
     "Для вашего удобства, после начала игры, нажмите F11 для полноэкранного режима и обновите игру с помощью CTRL+R.\n\n\n" +
     "Спасибо за внимание :)") || "Undefined Dragon";
   localStorage.setItem("dragonName", dragonName);
 }
 
 // Временная подсказка.
-var hint = "Передвижение:  A,S,D,W либо СТРЕЛАМИ ////////////////// Атака: J ////////////////// Воскресить дракона: R ////////////////// Игра в стадии разработки.";
+var hint = "Передвижение:  A,S,D,W либо СТРЕЛАМИ, Атака: J, Щит: K, Воскресить дракона: R. Игра в стадии разработки.";
 
 setTimeout( function() {
 hint = "Для того, что бы изменить название дракона - нажмите P";
@@ -177,6 +177,7 @@ function handlerOfPlayerActions() {
 // Отрисовка игры.
 function drawGame() {
   socket.on('state', function(players) {
+    var currentPlayer = {};
     ctx.clearRect(0, 0, 1100, 600);
     ctx.textAlign = "center";
 
@@ -202,6 +203,7 @@ function drawGame() {
       ctx.font = '12px Verdana';
       ctx.fillStyle = '#FF8C00';
       if(id === socket.id) {
+        currentPlayer = player;
         ctx.font = '14px Verdana';
         ctx.fillStyle = '#7FFF00';
       }
@@ -273,16 +275,33 @@ function drawGame() {
         ctx.lineWidth = 1;
         ctx.stroke();
       }
-
-      // Правое меню.
-      ctx.fillStyle = '#BDB76B';
-      ctx.fillRect(1000, 0, 100, 600);
     }
+
+    // Правое меню.
+    ctx.fillStyle = '#BDB76B';
+    ctx.fillRect(1000, 0, 100, 600);
 
     // Текст правого меню.
     ctx.font = '18px Verdana';
     ctx.fillStyle = '#191970';
-    ctx.fillText("Игроки", 1050, 20);
+    ctx.fillText("Склад", 1050, 20);
+
+    // отрисовка щита дракона
+    ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
+    ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
+    ctx.beginPath();
+    ctx.arc(1030, 50, 16, 0, Math.PI*2, false);
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if(currentPlayer.supportive) {
+      // Текст правого меню.
+      ctx.font = '14px Verdana';
+      ctx.fillStyle = '#191970';
+      ctx.fillText("-   " + currentPlayer.supportive.shieldsCount, 1070, 55);
+    }
 
     // Подсказка.
     ctx.font = '16px Verdana';

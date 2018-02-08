@@ -77,7 +77,8 @@ io.on('connection', function(socket) {
       movementBalls(player, socket.id);
     }
 
-    if(supportive.shield && player.supportive.shieldsCount > 0) {
+    // Если есть в складе запасной щит и щит не включен, активизируем щит.
+    if(supportive.shield && !player.shield && player.supportive.shieldsCount > 0) {
       activateShield(player);
     }
   });
