@@ -29,11 +29,13 @@ var initialPlayer = {
 };
 
 var players = {};
+var socketIdByUserId = {};
 
 io.on('connection', function(socket) {
   socket.on('new player', function(userData) {
-    players[socket.id] = {
-      balls: [],
+    socketIdByUserId[userData.id] = socket.id;
+
+    players[userData.id] = {
       dragonSpritePos: {
         vertical: 0,
         horizontal: 0
@@ -42,6 +44,7 @@ io.on('connection', function(socket) {
         maxBalls: 1,
         shieldsCount: 1,
       },
+      balls: [],
       x: generateRandomNumber(userData.x-75),
       y: generateRandomNumber(userData.y-70),
       dragonName: userData.dragonName,
@@ -54,8 +57,8 @@ io.on('connection', function(socket) {
   });
 
   socket.on('actions', function(actions) {
-    var { movement, spritePositions, supportive } = actions;
-    var player = players[socket.id] || Object.assign({}, initialPlayer);
+    var { movement, spritePositions, supportive, playerId } = actions;
+    var player = players[playerId] || Object.assign({}, initialPlayer);
 
     player.dragonSpritePos.vertical = spritePositions.vertical;
     player.dragonSpritePos.horizontal = spritePositions.horizontal;
@@ -75,7 +78,7 @@ io.on('connection', function(socket) {
     }
 
     if(player.balls.length > 0) {
-      movementBalls(player, socket.id);
+      movementBalls(player, playerId);
     }
 
     // Если есть в складе запасной щит и щит не включен, активизируем щит.
@@ -89,7 +92,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('disconnect', function() {
-    delete players[socket.id];
+    delete players[objectKeyByValue(socketIdByUserId, socket.id)];
   });
 });
 
@@ -117,7 +120,7 @@ function movementPlayer(player, movement) {
 }
 
 
-function movementBalls(player, socketId) {
+function movementBalls(player, userId) {
   var newBalls = [];
   player.balls.forEach(function (ball) {
     if(ball.sprPos === 0) {
@@ -147,7 +150,7 @@ function movementBalls(player, socketId) {
       
       // Проверяем шар попал в игрока или нет (удаляем шар во время следующего рендера)
       Object.keys(players).forEach(function (playerId) {
-        if(playerId !== socketId) {
+        if(playerId !== userId) {
           if(isIntersects(players[playerId], ball)) {
             ball.hitTheDragon = true;
 
@@ -235,4 +238,9 @@ function isIntersects(a,b) {
 function generateRandomNumber(distance) {
   var random = Math.random();
   return random*distance - random*distance%5;
+}
+
+// Получить ключь объекта по значению.
+function objectKeyByValue(obj, value) {
+  return Object.keys(obj)[Object.values(obj).indexOf(value)];
 }

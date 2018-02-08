@@ -1,26 +1,28 @@
 // Ввод названия Дракона.
-var dragonName = localStorage.getItem("dragonName");
-if(dragonName === null) {
-  dragonName = prompt("Напишите название вашего Дракона что бы начать игру. \n\n" +
-    "Передвижение: A,S,D,W      либо     СТРЕЛАМИ\n" + 
-    "Воскресить дракона:  R\n" + 
-    "Атака: J / Щит: K\n\n" + 
-    "Для вашего удобства, после начала игры, нажмите F11 для полноэкранного режима и обновите игру с помощью CTRL+R.\n\n\n" +
-    "Спасибо за внимание :)") || "Undefined Dragon";
-  localStorage.setItem("dragonName", dragonName);
+var dragonName = '', playerId = '';
+var dragonGameData = JSON.parse(localStorage.getItem("data"));
+
+if(dragonGameData === null) {
+  playerId = guidGenerator();
+  dragonName = prompt(window.STRINGS["promptWelcome"]) || "Undefined Dragon";
+
+  localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
+} else {
+  dragonName = dragonGameData.dragonName;
+  playerId = dragonGameData.playerId;
 }
 
 // Временная подсказка.
-var hint = "Передвижение:  A,S,D,W либо СТРЕЛАМИ, Атака: J, Щит: K, Воскресить дракона: R. Игра в стадии разработки.";
+var hint = window.STRINGS["hint1"];
 
 setTimeout( function() {
-hint = "Для того, что бы изменить название дракона - нажмите P";
-setTimeout(function() {
-hint = "Каждый раз когда Вы убивайте врага, скорость вашей атаки увелечивается + добавляется 1 здоровье. Максимальная скорость после 15 убийств.";
-setTimeout( function() {
-hint = "Чего не хватает в игре по вашему ? Нажмите I, пишите чего бы Вы хотели увидеть. Karaq @senc hayerenel greq )";
-}, 10000);
-}, 10000);
+  hint = window.STRINGS["hint2"];
+  setTimeout(function() {
+    hint = window.STRINGS["hint3"];
+    setTimeout( function() {
+      hint = window.STRINGS["hint4"];
+    }, 10000);
+  }, 10000);
 }, 10000);
 
 // внутренняя высота экрана.
@@ -43,6 +45,8 @@ var iBallSpeed = 8; // скорость шаров
 
 // Действия игрока
 var actions = {
+  playerId: playerId,
+
   movement: {
     up: false,
     down: false,
@@ -140,19 +144,22 @@ function hendlerEvents() {
     } else if (code === 75) {                // 75=K, 76=L
       actions.supportive.shield = true;
     } else if (code === 80) {                // 80=P
-      actions.setNewNameForDragon = prompt("Write name of your dragon") || "Undefined Dragon";
+      actions.setNewNameForDragon = prompt(window.STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
       dragonName = actions.setNewNameForDragon;
-      localStorage.setItem("dragonName", dragonName);
+      localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
     } else if (code === 73) {                // 73=I
       var idea = prompt("Ваша идея?");
       if(idea) {
         socket.emit("new idea", dragonName, idea);
       }
     } else if (code === 82) {                // 82=R
-      socket.emit('new player', {x: 1000, y: 600, dragonName});
+      socket.emit('new player', {x: 1000, y: 600, dragonName: dragonName, id: playerId});
     }
   });
 }
+
+
+
 
 // Обработчик движения игрока.
 function handlerOfPlayerActions() {
@@ -169,10 +176,6 @@ function handlerOfPlayerActions() {
 
   }, 1000 / 60);
 }
-
-
-
-
 
 // Отрисовка игры.
 function drawGame() {
@@ -216,7 +219,7 @@ function drawGame() {
 
       ctx.font = '12px Verdana';
       ctx.fillStyle = '#FF8C00';
-      if(id === socket.id) {
+      if(id === playerId) {
         currentPlayer = player;
         ctx.font = '14px Verdana';
         ctx.fillStyle = '#7FFF00';
@@ -326,7 +329,7 @@ $(document).ready(function () {
   canvas.height = 600;
 
   // Добавляем нового игрока.
-  socket.emit('new player', {x: 1000, y: 600, dragonName});
+  socket.emit('new player', {x: 1000, y: 600, dragonName: dragonName, id: playerId});
 
   // Добавляем обработчик событий.
   hendlerEvents();
@@ -337,3 +340,23 @@ $(document).ready(function () {
   // Рисовка игры.
   drawGame();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Функция генерирует случайный playerId в виде xxxx-xxxx-xxxx-xxxx-xxxx
+function guidGenerator() {
+    var S4 = function() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    return (S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4());
+}
