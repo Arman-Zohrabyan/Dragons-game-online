@@ -1,11 +1,9 @@
-// Ввод названия Дракона.
+// Ввод названия Дракона, сгенерирование playerId.
 var dragonName = '', playerId = '';
 var dragonGameData = JSON.parse(localStorage.getItem("data"));
-
 if(dragonGameData === null) {
   playerId = guidGenerator();
   dragonName = prompt(window.STRINGS["promptWelcome"]) || "Undefined Dragon";
-
   localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
 } else {
   dragonName = dragonGameData.dragonName;
@@ -57,7 +55,7 @@ var actions = {
     vertical: 0,
     horizontal: 0
   },
-  supportive: {
+  capability: {
     fire: false,
     shield: false
   },
@@ -140,9 +138,9 @@ function hendlerEvents() {
       actions.movement.down = false;
       actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 74) {                // 74 = J
-      actions.supportive.fire = true;
+      actions.capability.fire = true;
     } else if (code === 75) {                // 75=K, 76=L
-      actions.supportive.shield = true;
+      actions.capability.shield = true;
     } else if (code === 80) {                // 80=P
       actions.setNewNameForDragon = prompt(window.STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
       dragonName = actions.setNewNameForDragon;
@@ -171,8 +169,8 @@ function handlerOfPlayerActions() {
     }
     socket.emit('actions', actions);
 
-    actions.supportive.fire = false;
-    actions.supportive.shield = false;
+    actions.capability.fire = false;
+    actions.capability.shield = false;
 
   }, 1000 / 60);
 }
@@ -290,7 +288,7 @@ function drawGame() {
     ctx.fillStyle = '#191970';
     ctx.fillText("Склад", 1050, 20);
 
-    // отрисовка щита дракона
+    // Отрисовка щита дракона в правом меню.
     ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
     ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
     ctx.beginPath();
@@ -300,11 +298,11 @@ function drawGame() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    if(currentPlayer.supportive) {
+    if(currentPlayer.capability) {
       // Текст правого меню.
       ctx.font = '14px Verdana';
       ctx.fillStyle = '#191970';
-      ctx.fillText("-   " + currentPlayer.supportive.shieldsCount, 1070, 55);
+      ctx.fillText("-   " + currentPlayer.capability.shieldsCount, 1070, 55);
     }
 
     // Подсказка.

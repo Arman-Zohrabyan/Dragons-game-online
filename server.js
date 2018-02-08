@@ -25,7 +25,7 @@ server.listen(5000, function() {
 var initialPlayer = {
   balls: [],
   dragonSpritePos: {},
-  supportive: {}
+  capability: {}
 };
 
 var players = {};
@@ -36,40 +36,44 @@ io.on('connection', function(socket) {
     socketIdByUserId[userData.id] = socket.id;
 
     players[userData.id] = {
-      dragonSpritePos: {
+      dragonSpritePos: { // Позиции в спрайте
         vertical: 0,
         horizontal: 0
       },
-      supportive: {
+      capability: { // меняющиеся навыки / колличество
         maxBalls: 1,
         shieldsCount: 1,
       },
-      balls: [],
-      x: generateRandomNumber(userData.x-75),
-      y: generateRandomNumber(userData.y-70),
-      dragonName: userData.dragonName,
-      health: 5,
-      fireSpeed: 8,
-      enemiesKilled: 0,
-      shield: false,
-      shieldCountDown: 0,
+      balls: [], // шары
+      x: generateRandomNumber(userData.x-75), //координата x дракона в поле
+      y: generateRandomNumber(userData.y-70), //координата y дракона в поле
+      dragonName: userData.dragonName, // название дракона
+      health: 5, // начальное здоровье
+      fireSpeed: 8, // начальная скорость шара
+      ownSpeed: 5, // скорость передвижения дракона
+      enemiesKilled: 0, // колличество убитых врагов
+      shield: false, // щит
+      shieldCountDown: 0, // время до исчезновения щита
     };
   });
 
   socket.on('actions', function(actions) {
-    var { movement, spritePositions, supportive, playerId } = actions;
+    var { movement, spritePositions, capability, playerId } = actions;
     var player = players[playerId] || Object.assign({}, initialPlayer);
 
     player.dragonSpritePos.vertical = spritePositions.vertical;
     player.dragonSpritePos.horizontal = spritePositions.horizontal;
 
+    // Передвижение дракона
     movementPlayer(player, movement);
 
+    // Изменение названия дракона
     if(actions.setNewNameForDragon) {
       player.dragonName = actions.setNewNameForDragon;
     }
 
-    if(supportive.fire && player.balls.length < player.supportive.maxBalls) {
+    // Запускаем шар (если максимальное колличество шаров не было уже запущено).
+    if(capability.fire && player.balls.length < player.capability.maxBalls) {
       player.balls.push({
         x: player.x + 32,
         y: player.y + 30,
@@ -77,12 +81,13 @@ io.on('connection', function(socket) {
       });
     }
 
+    // Передвижение шаров.
     if(player.balls.length > 0) {
       movementBalls(player, playerId);
     }
 
     // Если есть в складе запасной щит и щит не включен, активизируем щит.
-    if(supportive.shield && !player.shield && player.supportive.shieldsCount > 0) {
+    if(capability.shield && !player.shield && player.capability.shieldsCount > 0) {
       activateShield(player);
     }
   });
@@ -103,23 +108,23 @@ setInterval(function() {
 
 
 
-
+// Движение игрока
 function movementPlayer(player, movement) {
   if (movement.left && player.x > 0-5) {
-    player.x -= 5;
+    player.x -= player.ownSpeed;
   }
   if (movement.up && player.y > 0-5) {
-    player.y -= 5;
+    player.y -= player.ownSpeed;
   }
   if (movement.right && player.x < 1000-75) {
-    player.x += 5;
+    player.x += player.ownSpeed;
   }
   if (movement.down && player.y < 600-70) {
-    player.y += 5;
+    player.y += player.ownSpeed;
   }
 }
 
-
+// Движение шара.
 function movementBalls(player, userId) {
   var newBalls = [];
   player.balls.forEach(function (ball) {
@@ -147,11 +152,13 @@ function movementBalls(player, userId) {
 
     if(ball.x < 1000 && ball.x > 0 && ball.y > 0 && ball.y < 600 && !ball.hitTheDragon) {
       newBalls.push(ball);
-      
+
       // Проверяем шар попал в игрока или нет (удаляем шар во время следующего рендера)
       Object.keys(players).forEach(function (playerId) {
         if(playerId !== userId) {
-          if(isIntersects(players[playerId], ball)) {
+          // Проверяем пересекается шар с драконом.
+          if(isIntersects(players[playerId], {x: players[playerId].x+70, y: players[playerId].y+75}, ball, {x: (ball.x+16), y: (ball.y+16)})) {
+
             ball.hitTheDragon = true;
 
             // Если у игрока не ставлен щит, отнимает единицу здоровья
@@ -159,14 +166,16 @@ function movementBalls(player, userId) {
               players[playerId].health--;
             }
 
-            // Когда здоровье = 0, удаляем игрока.
+            // Когда здоровье = 0, удаляем игрока. Даем бафы владельцу шара.
             if(players[playerId].health === 0) {
               player.enemiesKilled++;
 
+              // Добавляем к владельцу шара здоровье +1
               if(player.health < 10) {
                 player.health++;
               }
 
+              // Добавляем к владельцу шара скоровть атаки шара +2
               if(player.fireSpeed < 38) {                
                 player.fireSpeed+=2;
               }
@@ -182,52 +191,60 @@ function movementBalls(player, userId) {
   player.balls = newBalls;
 }
 
+// активация щита
 function activateShield(player) {
-  player.supportive.shieldsCount--;
+  player.capability.shieldsCount--;
   player.shieldCountDown = 6;
   player.shield = true;
-  countDown(player, {supportive: "shield", countDown: "shieldCountDown"});
+  countDown(player, {capability: "shield", countDown: "shieldCountDown"});
 }
 
+
+// кулдаун скилов
 function countDown(player, options) {
   setTimeout(function () {
     if(player[options.countDown] !== 1) {
       player[options.countDown]--;
       countDown(player, options);
     } else {
-      player[options.supportive] = false;
+      player[options.capability] = false;
     }
   }, 1000);
 }
 
 
-function isIntersects(a,b) {
+// Проверяет пересекаются ли прямоугольника
+// первый аргумент:    координаты левого верхнего угла первого прямоугольника
+// второй аргумент:    координаты правого нижнего угла первого прямоугольника
+// третий аргумент:    координаты левого верхнего угла второго прямоугольника
+// четвертый аргумент: координаты правого нижнего угла первого прямоугольника
+function isIntersects(a, a1, b, b1) {
   return(
     (
       (
-        ( a.x>=b.x && a.x<=b.x+16 )||( (a.x+70)>=b.x && (a.x+70)<=b.x+16  )
+        ( a.x>=b.x && a.x<=b1.x )||( a1.x>=b.x && a1.x<=b1.x  )
       ) && (
-        ( a.y>=b.y && a.y<=(b.y+16) )||( (a.y+75)>=b.y && (a.y+75)<=(b.y+16) )
+        ( a.y>=b.y && a.y<=b1.y )||( a1.y>=b.y && a1.y<=b1.y )
       )
     )||(
       (
-        ( b.x>=a.x && b.x<=(a.x+70) )||( b.x+16>=a.x && b.x+16<=(a.x+70)  )
+        ( b.x>=a.x && b.x<=a1.x )||( b1.x>=a.x && b1.x<=a1.x  )
       ) && (
-        ( b.y>=a.y && b.y<=(a.y+75) )||( (b.y+16)>=a.y && (b.y+16)<=(a.y+75) )
+        ( b.y>=a.y && b.y<=a1.y )||( b1.y>=a.y && b1.y<=a1.y )
       )
     )
   )||(
     (
       (
-        ( a.x>=b.x && a.x<=b.x+16 )||( (a.x+70)>=b.x && (a.x+70)<=b.x+16  )
+        ( a.x>=b.x && a.x<=b1.x )||( a1.x>=b.x && a1.x<=b1.x  )
       ) && (
-        ( b.y>=a.y && b.y<=(a.y+75) )||( (b.y+16)>=a.y && (b.y+16)<=(a.y+75) )
+        ( b.y>=a.y && b.y<=a1.y )||( b1.y>=a.y && b1.y<=a1.y )
       )
     )||(
       (
-        ( b.x>=a.x && b.x<=(a.x+70) )||( b.x+16>=a.x && b.x+16<=(a.x+70)  )
+        ( b.x>=a.x && b.x<=a1.x )||( b1.x>=a.x && b1.x<=a1.x  )
       ) && (
-        ( a.y>=b.y && a.y<=(b.y+16) )||( (a.y+75)>=b.y && (a.y+75)<=(b.y+16) )
+        ( a.y>=b.y && a.y<=b1.y )||( a1.y>=b.y && a1.y<=b1.y )
       )
     )
   );
