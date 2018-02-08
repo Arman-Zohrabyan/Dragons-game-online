@@ -200,6 +200,20 @@ function drawGame() {
         dragonH
       );
 
+      if(player.shield) {
+        player.dragonName = player.shieldCountDown + " " + player.dragonName;
+        // отрисовка щита дракона
+        ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
+        ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
+        ctx.beginPath();
+        ctx.arc(player.x+38, player.y+35, 40, 0, Math.PI*2, false);
+        ctx.closePath();
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.stroke();
+      }
+
+
       ctx.font = '12px Verdana';
       ctx.fillStyle = '#FF8C00';
       if(id === socket.id) {
@@ -211,19 +225,6 @@ function drawGame() {
       // Название дракона + Колличество убитых врагов.
       var enemiesKilled = player.enemiesKilled ? (" +" + player.enemiesKilled) : '';
       ctx.fillText(player.dragonName + enemiesKilled, player.x+38, player.y-8);
-
-
-      if(player.shield) {
-        // отрисовка щита дракона
-        ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
-        ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
-        ctx.beginPath();
-        ctx.arc(player.x+38, player.y+35, 40, 0, Math.PI*2, false);
-        ctx.closePath();
-        ctx.fill();
-        ctx.lineWidth = 5;
-        ctx.stroke();
-      }
 
 
       // Отрисовка шаров.

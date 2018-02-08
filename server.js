@@ -49,6 +49,7 @@ io.on('connection', function(socket) {
       fireSpeed: 8,
       enemiesKilled: 0,
       shield: false,
+      shieldCountDown: 0,
     };
   });
 
@@ -180,10 +181,20 @@ function movementBalls(player, socketId) {
 
 function activateShield(player) {
   player.supportive.shieldsCount--;
+  player.shieldCountDown = 6;
   player.shield = true;
+  countDown(player, {supportive: "shield", countDown: "shieldCountDown"});
+}
+
+function countDown(player, options) {
   setTimeout(function () {
-    player.shield = false;
-  }, 6000);
+    if(player[options.countDown] !== 1) {
+      player[options.countDown]--;
+      countDown(player, options);
+    } else {
+      player[options.supportive] = false;
+    }
+  }, 1000);
 }
 
 
