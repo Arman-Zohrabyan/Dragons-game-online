@@ -3,7 +3,7 @@ var dragonName = '', playerId = '';
 var dragonGameData = JSON.parse(localStorage.getItem("data"));
 if(dragonGameData === null) {
   playerId = guidGenerator();
-  dragonName = prompt(window.STRINGS["promptWelcome"]) || "Undefined Dragon";
+  dragonName = prompt(STRINGS["promptWelcome"]) || "Undefined Dragon";
   localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
 } else {
   dragonName = dragonGameData.dragonName;
@@ -11,20 +11,22 @@ if(dragonGameData === null) {
 }
 
 // Временная подсказка.
-var hint = window.STRINGS["hint1"];
+var hint = STRINGS["hint1"];
 
 setTimeout( function() {
-  hint = window.STRINGS["hint2"];
+  hint = STRINGS["hint2"];
   setTimeout(function() {
-    hint = window.STRINGS["hint3"];
+    hint = STRINGS["hint3"];
     setTimeout( function() {
-      hint = window.STRINGS["hint4"];
+      hint = STRINGS["hint4"];
     }, 10000);
   }, 10000);
-}, 10000);
+}, 15000);
 
 // внутренняя высота экрана.
 var documentInnerHeight = $(document).height();
+// внутренняя ширина экрана.
+var documentInnerWidth = $(document).width();
 
 // Подкулючаем веб-сокет.
 var socket = io();
@@ -142,7 +144,7 @@ function hendlerEvents() {
     } else if (code === 75) {                // 75=K, 76=L
       actions.capability.shield = true;
     } else if (code === 80) {                // 80=P
-      actions.setNewNameForDragon = prompt(window.STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
+      actions.setNewNameForDragon = prompt(STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
       dragonName = actions.setNewNameForDragon;
       localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
     } else if (code === 73) {                // 73=I
@@ -279,6 +281,13 @@ function drawGame() {
       }
     }
 
+    if($.isEmptyObject(currentPlayer)) {
+      // Подсказка если игрока нет.
+      ctx.font = '30px Verdana';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillText(STRINGS["hintForTheDeads"], 500, 400);
+    }
+
     // Правое меню.
     ctx.fillStyle = '#BDB76B';
     ctx.fillRect(1000, 0, 100, 600);
@@ -287,6 +296,7 @@ function drawGame() {
     ctx.font = '18px Verdana';
     ctx.fillStyle = '#191970';
     ctx.fillText("Склад", 1050, 20);
+    ctx.fillText("Управление", 1050, 500);
 
     // Отрисовка щита дракона в правом меню.
     ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
@@ -298,15 +308,24 @@ function drawGame() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Текст правого меню.
     if(currentPlayer.capability) {
-      // Текст правого меню.
+      // Колличество щитов
       ctx.font = '14px Verdana';
       ctx.fillStyle = '#191970';
       ctx.fillText("-   " + currentPlayer.capability.shieldsCount, 1070, 55);
+
+      // Управоение
+      ctx.font = '12px Verdana';
+      ctx.fillText("Передвижеие:", 1050, 520);
+      ctx.fillText("A, S, D, W", 1050, 535);
+      ctx.fillText("Атака: J", 1050, 555);
+      ctx.fillText("Щит: K", 1050, 575);
+      ctx.fillText("Перерождение: R", 1050, 595);
     }
 
     // Подсказка.
-    ctx.font = '16px Verdana';
+    ctx.font = '20px Verdana';
     ctx.textAlign = "start";
     ctx.fillStyle = '#FFF';
     ctx.fillText(hint, 5, 595);
@@ -318,7 +337,7 @@ function drawGame() {
 $(document).ready(function () {
   // Задаем респонзивно ширину и высоту канваса.
   $("#canvas").height(documentInnerHeight);
-  $("#canvas").width(documentInnerHeight*11/6);
+  $("#canvas").width((documentInnerHeight*11/6 > documentInnerWidth) ? documentInnerWidth : documentInnerHeight*11/6);
 
   // Общие переменные и настройки канваса.
   canvas = $("#canvas")[0];
