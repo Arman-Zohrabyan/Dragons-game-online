@@ -24,6 +24,8 @@ if(dragonGameData === null) {
   playerId = dragonGameData.playerId;
 }
 
+var currentPlayer = {};
+
 // Временная подсказка.
 var hint = STRINGS["hint1"];
 
@@ -161,7 +163,9 @@ function hendlerEvents() {
         socket.emit("new idea", dragonName, idea);
       }
     } else if (code === 82) {                // 82=R
-      socket.emit('new player', {x: SIZES.field.w, y: SIZES.field.h, dragonName: dragonName, id: playerId});
+      if($.isEmptyObject(currentPlayer)) {
+        socket.emit('new player', {x: SIZES.field.w, y: SIZES.field.h, dragonName: dragonName, id: playerId});
+      }
     }
   });
 }
@@ -188,7 +192,7 @@ function handlerOfPlayerActions() {
 // Отрисовка игры.
 function drawGame() {
   socket.on('state', function(players, bonuses) {
-    var currentPlayer = {};
+    currentPlayer = {};
     ctx.clearRect(0, 0, SIZES.canvas.w, SIZES.canvas.h);
 
 
@@ -196,7 +200,6 @@ function drawGame() {
     ctx.drawImage(backgroundImage, 0, 0, SIZES.field.w, SIZES.field.h);
 
     if(bonuses.shield) {
-      console.log(bonuses.shield.x);
       ctx.strokeStyle = "#1E90FF";
       ctx.fillStyle = "#AFEEEE";
       ctx.beginPath();
