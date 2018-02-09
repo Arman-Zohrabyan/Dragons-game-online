@@ -31,6 +31,15 @@ var initialPlayer = {
 var players = {};
 var socketIdByUserId = {};
 
+var SIZES = {
+  field: {w: 900, h: 600},
+  dragonCanvas: {w: 60, h: 56}, // ширина-высота дракона в канвасе
+  ballCanvas: {w: 10, h: 10}, // ширина-высота шара в канвасе
+  shieldRadius: 32,
+  miniShieldRadius: 16,
+  healthCircleRadius: 3,
+};
+
 io.on('connection', function(socket) {
   socket.on('new player', function(userData) {
     socketIdByUserId[userData.id] = socket.id;
@@ -45,8 +54,8 @@ io.on('connection', function(socket) {
         shieldsCount: 1,
       },
       balls: [], // шары
-      x: generateRandomNumber(userData.x-75), //координата x дракона в поле
-      y: generateRandomNumber(userData.y-70), //координата y дракона в поле
+      x: generateRandomNumber(userData.x-SIZES.dragonCanvas.w), //координата x дракона в поле
+      y: generateRandomNumber(userData.y-SIZES.dragonCanvas.h), //координата y дракона в поле
       dragonName: userData.dragonName, // название дракона
       health: 5, // начальное здоровье
       fireSpeed: 8, // начальная скорость шара
@@ -76,8 +85,8 @@ io.on('connection', function(socket) {
     // TODO: проблема с проверкой, надо проверить capability && 
     if(capability && capability.fire && player.balls.length < player.capability.maxBalls) {
       player.balls.push({
-        x: player.x + 32,
-        y: player.y + 30,
+        x: player.x + Math.floor(SIZES.dragonCanvas.w/2-SIZES.ballCanvas.w/2),
+        y: player.y + Math.floor(SIZES.dragonCanvas.h/2-SIZES.ballCanvas.h/2),
         sprPos: spritePositions.vertical
       });
     }
@@ -112,16 +121,16 @@ setInterval(function() {
 
 // Движение игрока
 function movementPlayer(player, movement) {
-  if (movement.left && player.x > 0-5) {
+  if (movement.left && player.x > 0) {
     player.x -= player.ownSpeed;
   }
-  if (movement.up && player.y > 0-5) {
+  if (movement.up && player.y > 0) {
     player.y -= player.ownSpeed;
   }
-  if (movement.right && player.x < 1000-75) {
+  if (movement.right && player.x < SIZES.field.w-SIZES.dragonCanvas.w) {
     player.x += player.ownSpeed;
   }
-  if (movement.down && player.y < 600-70) {
+  if (movement.down && player.y < SIZES.field.h-SIZES.dragonCanvas.h) {
     player.y += player.ownSpeed;
   }
 }
@@ -152,14 +161,19 @@ function movementBalls(player, userId) {
       ball.y -= player.fireSpeed;
     }
 
-    if(ball.x < 1000 && ball.x > 0 && ball.y > 0 && ball.y < 600 && !ball.hitTheDragon) {
+    if(ball.x < SIZES.field.w && ball.x > 0 && ball.y > 0 && ball.y < SIZES.field.h && !ball.hitTheDragon) {
       newBalls.push(ball);
 
       // Проверяем шар попал в игрока или нет (удаляем шар во время следующего рендера)
       Object.keys(players).forEach(function (playerId) {
         if(playerId !== userId) {
           // Проверяем пересекается шар с драконом.
-          if(isIntersects(players[playerId], {x: players[playerId].x+70, y: players[playerId].y+75}, ball, {x: (ball.x+16), y: (ball.y+16)})) {
+          if(isIntersects(
+                players[playerId],
+                {x: players[playerId].x+SIZES.dragonCanvas.w,y: players[playerId].y+SIZES.dragonCanvas.h},
+                ball,
+                {x: (ball.x+SIZES.ballCanvas.h), y: (ball.y+SIZES.ballCanvas.h)}
+            )) {
 
             ball.hitTheDragon = true;
 

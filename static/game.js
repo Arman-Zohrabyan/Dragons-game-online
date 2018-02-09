@@ -1,3 +1,17 @@
+var SIZES = {
+  documentInner: {w: $(document).width(), h: $(document).height()}, // внутренняя ширина-высота экрана.
+  canvas: {w: 1100, h: 600},
+  field: {w: 900, h: 600},
+  menu: {w: 200, h: 600},
+  dragon: {w: 75, h: 70}, // ширина-высота дракона в спрайте
+  dragonCanvas: {w: 60, h: 56}, // ширина-высота дракона в канвасе
+  ball: {w: 32, h: 32}, // ширина-высота шара в спрайте
+  ballCanvas: {w: 10, h: 10}, // ширина-высота шара в канвасе
+  shieldRadius: 32,
+  miniShieldRadius: 16,
+  healthCircleRadius: 3,
+};
+
 // Ввод названия Дракона, сгенерирование playerId.
 var dragonName = '', playerId = '';
 var dragonGameData = JSON.parse(localStorage.getItem("data"));
@@ -23,25 +37,11 @@ setTimeout( function() {
   }, 10000);
 }, 15000);
 
-// внутренняя высота экрана.
-var documentInnerHeight = $(document).height();
-// внутренняя ширина экрана.
-var documentInnerWidth = $(document).width();
-
 // Подкулючаем веб-сокет.
 var socket = io();
 
 // глобальные переменные для канваса.
 var canvas, ctx = null;
-
-var dragonW = 75; // ширина дракона
-var dragonH = 70; // высота дракона
-var ballW = 32; // ширина шара в спрайте
-var ballH = 32; // высота шара в спрайте
-var ballCanvasW = 16; // будет нарисован шар с шириной 
-var ballCanvasH = 16; // будет нарисован шар с высотой 
-var iBallSpeed = 8; // скорость шаров
-
 
 // Действия игрока
 var actions = {
@@ -153,7 +153,7 @@ function hendlerEvents() {
         socket.emit("new idea", dragonName, idea);
       }
     } else if (code === 82) {                // 82=R
-      socket.emit('new player', {x: 1000, y: 600, dragonName: dragonName, id: playerId});
+      socket.emit('new player', {x: SIZES.field.w, y: SIZES.field.h, dragonName: dragonName, id: playerId});
     }
   });
 }
@@ -181,11 +181,11 @@ function handlerOfPlayerActions() {
 function drawGame() {
   socket.on('state', function(players) {
     var currentPlayer = {};
-    ctx.clearRect(0, 0, 1100, 600);
+    ctx.clearRect(0, 0, SIZES.canvas.w, SIZES.canvas.h);
     ctx.textAlign = "center";
 
     // Задний фон.
-    ctx.drawImage(backgroundImage, 0, 0, 1000, 600);
+    ctx.drawImage(backgroundImage, 0, 0, SIZES.field.w, SIZES.field.h);
 
     for (var id in players) {
       var player = players[id];
@@ -193,14 +193,14 @@ function drawGame() {
       // Отрисовка дракона.
       ctx.drawImage(
         oDragonImage,
-        player.dragonSpritePos.horizontal*dragonW,
-        player.dragonSpritePos.vertical*dragonH,
-        dragonW,
-        dragonH,
+        player.dragonSpritePos.horizontal*SIZES.dragon.w,
+        player.dragonSpritePos.vertical*SIZES.dragon.h,
+        SIZES.dragon.w,
+        SIZES.dragon.h,
         player.x,
         player.y,
-        dragonW,
-        dragonH
+        SIZES.dragonCanvas.w,
+        SIZES.dragonCanvas.h
       );
 
       if(player.shield) {
@@ -209,7 +209,16 @@ function drawGame() {
         ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
         ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
         ctx.beginPath();
-        ctx.arc(player.x+38, player.y+35, 40, 0, Math.PI*2, false);
+
+        ctx.arc(
+          player.x+Math.ceil(SIZES.dragonCanvas.w/2)+2,
+          player.y+Math.floor(SIZES.dragonCanvas.h/2),
+          SIZES.shieldRadius,
+          0,
+          Math.PI*2,
+          false
+        );
+
         ctx.closePath();
         ctx.fill();
         ctx.lineWidth = 5;
@@ -227,21 +236,25 @@ function drawGame() {
 
       // Название дракона + Колличество убитых врагов.
       var enemiesKilled = player.enemiesKilled ? (" +" + player.enemiesKilled) : '';
-      ctx.fillText(player.dragonName + enemiesKilled, player.x+38, player.y-8);
+      ctx.fillText(
+        player.dragonName + enemiesKilled,
+        player.x+Math.ceil(SIZES.dragonCanvas.w/2)+2,
+        player.y-8
+      );
 
 
       // Отрисовка шаров.
       for (var key = 0; key < player.balls.length; key++) {
         ctx.drawImage(
           oBallImage,
-          player.balls[key].sprPos*ballW,
+          player.balls[key].sprPos*SIZES.ball.w,
           0,
-          ballW,
-          ballH,
+          SIZES.ball.w,
+          SIZES.ball.h,
           player.balls[key].x,
           player.balls[key].y,
-          ballCanvasW,
-          ballCanvasH
+          SIZES.ballCanvas.h,
+          SIZES.ballCanvas.h
         );
       }
 
@@ -265,7 +278,14 @@ function drawGame() {
       var i = 0;
       ctx.beginPath();
       for(var i = 0; i < player.health; i++) {
-        ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
+        ctx.arc(
+          player.x+i*Math.floor((SIZES.dragonCanvas.w+8*SIZES.healthCircleRadius)/5),
+          player.y,
+          SIZES.healthCircleRadius,
+          0,
+          Math.PI*2,
+          false
+        );
         ctx.fill();
       }
       ctx.closePath();
@@ -273,7 +293,14 @@ function drawGame() {
       ctx.fillStyle = "rgba(255, 255, 255, 0)";
       for(i; i < 5; i++) {
         ctx.beginPath();
-        ctx.arc(player.x+i*20, player.y, 4, 0, Math.PI*2, false);
+        ctx.arc(
+          player.x+i*Math.floor((SIZES.dragonCanvas.w+8*SIZES.healthCircleRadius)/5),
+          player.y,
+          SIZES.healthCircleRadius,
+          0,
+          Math.PI*2,
+          false
+        );
         ctx.closePath();
         ctx.fill();
         ctx.lineWidth = 1;
@@ -285,24 +312,49 @@ function drawGame() {
       // Подсказка если игрока нет.
       ctx.font = '30px Verdana';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillText(STRINGS["hintForTheDeads"], 500, 400);
+      ctx.fillText(STRINGS["hintForTheDeads"], SIZES.field.w/2, SIZES.field.h/2);
     }
+
 
     // Правое меню.
     ctx.fillStyle = '#BDB76B';
-    ctx.fillRect(1000, 0, 100, 600);
+    ctx.fillRect(SIZES.field.w, 0, SIZES.menu.w, SIZES.menu.h);
 
     // Текст правого меню.
-    ctx.font = '18px Verdana';
+    ctx.font = '25px Verdana';
     ctx.fillStyle = '#191970';
-    ctx.fillText("Склад", 1050, 20);
-    ctx.fillText("Управление", 1050, 500);
+    ctx.fillText("Склад", SIZES.canvas.w-SIZES.menu.w/2, 20);
+    ctx.fillText("Управление", SIZES.canvas.w-SIZES.menu.w/2, 110);
 
     // Отрисовка щита дракона в правом меню.
     ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
     ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
     ctx.beginPath();
-    ctx.arc(1030, 50, 16, 0, Math.PI*2, false);
+    ctx.arc(
+      SIZES.field.w + 30,
+      50,
+      SIZES.miniShieldRadius,
+      0,
+      Math.PI*2,
+      false
+    );
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Отрисовка щита дракона в правом меню.
+    ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
+    ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
+    ctx.beginPath();
+    ctx.arc(
+      SIZES.field.w + 30,
+      50,
+      SIZES.miniShieldRadius,
+      0,
+      Math.PI*2,
+      false
+    );
     ctx.closePath();
     ctx.fill();
     ctx.lineWidth = 2;
@@ -311,21 +363,27 @@ function drawGame() {
     // Текст правого меню.
     if(currentPlayer.capability) {
       // Колличество щитов
-      ctx.font = '14px Verdana';
+      ctx.font = '16px Verdana';
       ctx.fillStyle = '#191970';
-      ctx.fillText("-   " + currentPlayer.capability.shieldsCount, 1070, 55);
+      ctx.fillText("- " + currentPlayer.capability.shieldsCount, SIZES.field.w + 60, 55);
 
-      // Управоение
-      ctx.font = '12px Verdana';
-      ctx.fillText("Передвижеие:", 1050, 520);
-      ctx.fillText("A, S, D, W", 1050, 535);
-      ctx.fillText("Атака: J", 1050, 555);
-      ctx.fillText("Щит: K", 1050, 575);
-      ctx.fillText("Перерождение: R", 1050, 595);
     }
+    // Управоение
+    ctx.font = '12px Verdana';
+    ctx.fillText("Передвижеие: A, S, D, W", SIZES.canvas.w-SIZES.menu.w/2, 130);
+    ctx.fillText("Изменить название дракона: P", SIZES.canvas.w-SIZES.menu.w/2, 166);
+    ctx.font = '15px Verdana';
+    ctx.fillText("Атака: J . Щит: K", SIZES.canvas.w-SIZES.menu.w/2, 148);
+    ctx.fillText("Перерождение: R", SIZES.canvas.w-SIZES.menu.w/2, 184);
+
+    //
+    ctx.font = '25px Verdana';
+    ctx.fillText("ЗДЕСЬ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-90);
+    ctx.fillText("БУДЕТ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-60);
+    ctx.fillText("ЧАТ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-30);
 
     // Подсказка.
-    ctx.font = '20px Verdana';
+    ctx.font = '16px Verdana';
     ctx.textAlign = "start";
     ctx.fillStyle = '#FFF';
     ctx.fillText(hint, 5, 595);
@@ -336,17 +394,17 @@ function drawGame() {
 // Инициализация
 $(document).ready(function () {
   // Задаем респонзивно ширину и высоту канваса.
-  $("#canvas").height(documentInnerHeight);
-  $("#canvas").width((documentInnerHeight*11/6 > documentInnerWidth) ? documentInnerWidth : documentInnerHeight*11/6);
+  $("#canvas").height(SIZES.documentInner.h);
+  $("#canvas").width((SIZES.documentInner.h*11/6 > SIZES.documentInner.w) ? SIZES.documentInner.w : SIZES.documentInner.h*11/6);
 
   // Общие переменные и настройки канваса.
   canvas = $("#canvas")[0];
   ctx = canvas.getContext('2d');
-  canvas.width = 1100;
-  canvas.height = 600;
+  canvas.width = SIZES.canvas.w;
+  canvas.height = SIZES.canvas.h;
 
   // Добавляем нового игрока.
-  socket.emit('new player', {x: 1000, y: 600, dragonName: dragonName, id: playerId});
+  socket.emit('new player', {x: SIZES.field.w, y: SIZES.field.h, dragonName: dragonName, id: playerId});
 
   // Добавляем обработчик событий.
   hendlerEvents();
