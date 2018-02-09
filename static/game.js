@@ -90,6 +90,11 @@ var shieldImage = new Image();
 shieldImage.src = '/static/images/shield.png';
 shieldImage.onload = function() {};
 
+// Инициализвция картинку +2.
+var twoFireImage = new Image();
+twoFireImage.src = '/static/images/2fire.png';
+twoFireImage.onload = function() {};
+
 
 // Функция определяет вертикальную позицию для спрайта дракона.
 function getSpriteVerticalPosition() {
@@ -377,22 +382,14 @@ function drawGame() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Отрисовка щита дракона в правом меню.
-    ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
-    ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
-    ctx.beginPath();
-    ctx.arc(
-      SIZES.field.w + 30,
-      50,
-      SIZES.miniShieldRadius,
-      0,
-      Math.PI*2,
-      false
+    // Отрисовка +2 в правом меню.
+    ctx.drawImage(
+      twoFireImage,
+      SIZES.field.w + 100,
+      34,
+      35,
+      35
     );
-    ctx.closePath();
-    ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.stroke();
 
     // Текст правого меню.
     if(currentPlayer.capability) {
@@ -400,9 +397,11 @@ function drawGame() {
       ctx.font = '16px Verdana';
       ctx.fillStyle = '#191970';
       ctx.fillText("- " + currentPlayer.capability.shieldsCount, SIZES.field.w + 60, 55);
+      // Колличество +2
+      ctx.fillText("- 0"/* + currentPlayer.capability.shieldsCount*/, SIZES.field.w + 150, 55);
 
     }
-    // Управоение
+    // Управление
     ctx.font = '12px Verdana';
     ctx.fillText("Передвижеие: A, S, D, W", SIZES.canvas.w-SIZES.menu.w/2, 130);
     ctx.fillText("Изменить название дракона: P", SIZES.canvas.w-SIZES.menu.w/2, 166);
