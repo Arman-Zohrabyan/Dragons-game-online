@@ -76,9 +76,14 @@ oBallImage.src = '/static/images/fireball.png';
 oBallImage.onload = function() {};
 
 // Инициализвция картинку заднего фона.
-backgroundImage = new Image();
+var backgroundImage = new Image();
 backgroundImage.src = '/static/images/background.jpg';
 backgroundImage.onload = function() {};
+
+// Инициализвция картинку щита.
+var shieldImage = new Image();
+shieldImage.src = '/static/images/shield.png';
+shieldImage.onload = function() {};
 
 
 // Функция определяет вертикальную позицию для спрайта дракона.
@@ -206,23 +211,35 @@ function drawGame() {
       if(player.shield) {
         player.dragonName = player.shieldCountDown + " " + player.dragonName;
         // отрисовка щита дракона
-        ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
-        ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
-        ctx.beginPath();
+        // ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
+        // ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
+        // ctx.beginPath();
 
-        ctx.arc(
-          player.x+Math.ceil(SIZES.dragonCanvas.w/2)+2,
-          player.y+Math.floor(SIZES.dragonCanvas.h/2),
-          SIZES.shieldRadius,
+        // ctx.arc(
+        //   player.x+Math.ceil(SIZES.dragonCanvas.w/2)+2,
+        //   player.y+Math.floor(SIZES.dragonCanvas.h/2),
+        //   SIZES.shieldRadius,
+        //   0,
+        //   Math.PI*2,
+        //   false
+        // );
+
+        // ctx.closePath();
+        // ctx.fill();
+        // ctx.lineWidth = 5;
+        // ctx.stroke();
+
+        ctx.drawImage(
+          shieldImage,
+          (player.dragonSpritePos.horizontal)*75,
           0,
-          Math.PI*2,
-          false
+          75,
+          75,
+          player.x-5,
+          player.y-5,
+          75,
+          70
         );
-
-        ctx.closePath();
-        ctx.fill();
-        ctx.lineWidth = 5;
-        ctx.stroke();
       }
 
 
