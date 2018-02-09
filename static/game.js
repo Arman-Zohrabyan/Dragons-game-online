@@ -155,6 +155,9 @@ function hendlerEvents() {
       actions.capability.shield = true;
     } else if (code === 80) {                // 80=P
       actions.setNewNameForDragon = prompt(STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
+      if(actions.setNewNameForDragon.length > 16) {
+        actions.setNewNameForDragon = actions.setNewNameForDragon.substr(0,16);
+      }
       dragonName = actions.setNewNameForDragon;
       localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
     } else if (code === 73) {                // 73=I
@@ -242,24 +245,6 @@ function drawGame() {
 
       if(player.shield) {
         player.dragonName = player.shieldCountDown + " " + player.dragonName;
-        // отрисовка щита дракона
-        // ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
-        // ctx.fillStyle = "rgba(0, 128, 255, 0.2)";
-        // ctx.beginPath();
-
-        // ctx.arc(
-        //   player.x+Math.ceil(SIZES.dragonCanvas.w/2)+2,
-        //   player.y+Math.floor(SIZES.dragonCanvas.h/2),
-        //   SIZES.shieldRadius,
-        //   0,
-        //   Math.PI*2,
-        //   false
-        // );
-
-        // ctx.closePath();
-        // ctx.fill();
-        // ctx.lineWidth = 5;
-        // ctx.stroke();
 
         ctx.drawImage(
           shieldImage,
