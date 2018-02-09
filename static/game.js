@@ -57,6 +57,9 @@ var actions = {
     vertical: 0,
     horizontal: 0
   },
+  spriteShield: {
+    horizontal: 0
+  },
   capability: {
     fire: false,
     shield: false
@@ -184,13 +187,39 @@ function handlerOfPlayerActions() {
 
 // Отрисовка игры.
 function drawGame() {
-  socket.on('state', function(players) {
+  socket.on('state', function(players, bonuses) {
     var currentPlayer = {};
     ctx.clearRect(0, 0, SIZES.canvas.w, SIZES.canvas.h);
-    ctx.textAlign = "center";
+
 
     // Задний фон.
     ctx.drawImage(backgroundImage, 0, 0, SIZES.field.w, SIZES.field.h);
+
+    if(bonuses.shield) {
+      console.log(bonuses.shield.x);
+      ctx.strokeStyle = "#1E90FF";
+      ctx.fillStyle = "#AFEEEE";
+      ctx.beginPath();
+      ctx.shadowBlur=20;
+      ctx.shadowColor="black";
+
+      ctx.arc(
+        bonuses.shield.x,
+        bonuses.shield.y,
+        10,
+        0,
+        Math.PI*2,
+        false
+      );
+
+      ctx.closePath();
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.stroke(); 
+    }
+
+    ctx.shadowBlur=0;
+    ctx.textAlign = "center";
 
     for (var id in players) {
       var player = players[id];
@@ -231,7 +260,7 @@ function drawGame() {
 
         ctx.drawImage(
           shieldImage,
-          (player.dragonSpritePos.horizontal)*75,
+          Math.floor(player.shieldSprite.horizontal/2)*75,
           0,
           75,
           75,

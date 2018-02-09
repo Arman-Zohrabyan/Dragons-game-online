@@ -31,6 +31,9 @@ var initialPlayer = {
 var players = {};
 var socketIdByUserId = {};
 
+var bonuses = {};
+
+
 var SIZES = {
   field: {w: 900, h: 600},
   dragonCanvas: {w: 60, h: 56}, // ширина-высота дракона в канвасе
@@ -40,6 +43,11 @@ var SIZES = {
   healthCircleRadius: 3,
 };
 
+
+
+
+
+generateBonusShield();
 io.on('connection', function(socket) {
   socket.on('new player', function(userData) {
     socketIdByUserId[userData.id] = socket.id;
@@ -49,9 +57,12 @@ io.on('connection', function(socket) {
         vertical: 0,
         horizontal: 0
       },
+      shieldSprite: {
+        horizontal: 0
+      },
       capability: { // меняющиеся навыки / колличество
         maxBalls: 1,
-        shieldsCount: 1,
+        shieldsCount: 0,
       },
       balls: [], // шары
       x: generateRandomNumber(userData.x-SIZES.dragonCanvas.w), //координата x дракона в поле
@@ -101,6 +112,19 @@ io.on('connection', function(socket) {
     if(capability && capability.shield && !player.shield && player.capability.shieldsCount > 0) {
       activateShield(player);
     }
+
+    // изменить спрайт позицию активированного щита.
+    if(player.shield) {
+      if(player.shieldSprite.horizontal == 0) {
+        player.shieldSprite.horizontal = 16;
+      } else {
+        player.shieldSprite.horizontal--;
+      }
+    }
+
+    if(bonuses.shield) {
+      checkPlayersAndShieldContact(player);
+    }
   });
 
   socket.on('new idea', function(dragonName, idea) {
@@ -113,7 +137,7 @@ io.on('connection', function(socket) {
 });
 
 setInterval(function() {
-  io.sockets.emit('state', players);
+  io.sockets.emit('state', players, bonuses);
 }, 1000 / 60);
 
 
@@ -132,6 +156,19 @@ function movementPlayer(player, movement) {
   }
   if (movement.down && player.y < SIZES.field.h-SIZES.dragonCanvas.h) {
     player.y += player.ownSpeed;
+  }
+}
+
+// Проверить соприкосновение щита и игрока
+function checkPlayersAndShieldContact(player) {
+  if(isIntersects(
+      player,
+      {x: player.x+SIZES.dragonCanvas.w,y: player.y+SIZES.dragonCanvas.h},
+      bonuses.shield,
+      {x: bonuses.shield.x+20, y: bonuses.shield.y+20}
+  )) {
+    player.capability.shieldsCount++;
+    delete bonuses.shield;
   }
 }
 
@@ -188,7 +225,7 @@ function movementBalls(player, userId) {
 
               // Добавляем к владельцу шара здоровье +1
               if(player.health < 10) {
-                player.health++;
+                player.health+=2;
               }
 
               // Добавляем к владельцу шара скоровть атаки шара +2
@@ -226,6 +263,42 @@ function countDown(player, options) {
       player[options.capability] = false;
     }
   }, 1000);
+}
+
+// вызывая для генерации бонуса Щита. Как аргумент получает число в промежутке от 15 до 20 и поле завершения снова вызывается.
+function generateBonusShield() {
+  time = getRandomInt(15, 20);
+  setTimeout( function() {
+
+    if(Object.keys(players).length > 0) {
+      var coordinates = getRandomFreeCoordinates();
+      bonuses.shield = {x: coordinates.x, y: coordinates.y};
+    }
+
+    generateBonusShield();
+  }, time*1000);
+}
+
+function getRandomFreeCoordinates() {
+  var x = Math.floor(Math.random()*SIZES.field.w);
+  var y = Math.floor(Math.random()*SIZES.field.h);
+  var coordinatesIsOkay = true;
+
+  Object.keys(players).forEach(function (playerId) {
+    if(isIntersects(
+        players[playerId],
+        {x: players[playerId].x+SIZES.dragonCanvas.w,y: players[playerId].y+SIZES.dragonCanvas.h},
+        {x: x, y: y},
+        {x: x+20, y: y+20}
+    )) {
+      coordinatesIsOkay = false;
+    }
+  });
+
+  if(coordinatesIsOkay) {
+    return {x: x, y: y}
+  }
+  return getRandomFreeCoordinates();
 }
 
 
@@ -276,4 +349,9 @@ function generateRandomNumber(distance) {
 // Получить ключь объекта по значению.
 function objectKeyByValue(obj, value) {
   return Object.keys(obj)[Object.values(obj).indexOf(value)];
+}
+
+// Случайное целое число между min и max
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
