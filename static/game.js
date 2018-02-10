@@ -64,36 +64,32 @@ var actions = {
   },
   capability: {
     fire: false,
-    shield: false
+    shield: false,
+    multiplyFire: false,
   },
   setNewNameForDragon: '',
 };
 
 
-// Инициализация картинку дракона.
-var oDragonImage = new Image();
-oDragonImage.src = '/static/images/dragon.gif';
-oDragonImage.onload = function() {};
+// Инициализация картинки дракона.
+var dragonImage = new Image();
+dragonImage.src = '/static/images/dragon.gif';
 
-// Инициализация картинку огня.
-var oBallImage = new Image();
-oBallImage.src = '/static/images/fireball.png';
-oBallImage.onload = function() {};
+// Инициализация картинки огня.
+var ballImage = new Image();
+ballImage.src = '/static/images/fireball.png';
 
-// Инициализвция картинку заднего фона.
+// Инициализвция картинки заднего фона.
 var backgroundImage = new Image();
 backgroundImage.src = '/static/images/background.jpg';
-backgroundImage.onload = function() {};
 
-// Инициализвция картинку щита.
+// Инициализвция картинки щита.
 var shieldImage = new Image();
 shieldImage.src = '/static/images/shield.png';
-shieldImage.onload = function() {};
 
-// Инициализвция картинку +2.
-var twoFireImage = new Image();
-twoFireImage.src = '/static/images/2fire.png';
-twoFireImage.onload = function() {};
+// Инициализвция картинки x2.
+var multiplyFireImage = new Image();
+multiplyFireImage.src = '/static/images/2fire.png';
 
 
 // Функция определяет вертикальную позицию для спрайта дракона.
@@ -156,8 +152,10 @@ function hendlerEvents() {
       actions.spritePositions.vertical = getSpriteVerticalPosition();
     } else if (code === 74) {                // 74 = J
       actions.capability.fire = true;
-    } else if (code === 75) {                // 75=K, 76=L
+    } else if (code === 75) {                // 75=K
       actions.capability.shield = true;
+    } else if (code === 76) {                // 76=L
+      actions.capability.multiplyFire = true;
     } else if (code === 80) {                // 80=P
       actions.setNewNameForDragon = prompt(STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
       if(actions.setNewNameForDragon.length > 16) {
@@ -193,6 +191,7 @@ function handlerOfPlayerActions() {
 
     actions.capability.fire = false;
     actions.capability.shield = false;
+    actions.capability.multiplyFire = false;
 
   }, 1000 / 60);
 }
@@ -237,7 +236,7 @@ function drawGame() {
 
       // Отрисовка дракона.
       ctx.drawImage(
-        oDragonImage,
+        dragonImage,
         player.dragonSpritePos.horizontal*SIZES.dragon.w,
         player.dragonSpritePos.vertical*SIZES.dragon.h,
         SIZES.dragon.w,
@@ -249,7 +248,7 @@ function drawGame() {
       );
 
       if(player.shield) {
-        player.dragonName = player.shieldCountDown + " " + player.dragonName;
+        player.dragonName = "щит: " + player.shieldCountDown + " / " + player.dragonName;
 
         ctx.drawImage(
           shieldImage,
@@ -262,6 +261,22 @@ function drawGame() {
           75,
           70
         );
+      }
+
+      if(player.multiplyFire) {
+        player.dragonName = "x2: " + player.multiplyFireCountDown + " / " + player.dragonName;
+
+        // ctx.drawImage(
+        //   shieldImage,
+        //   Math.floor(player.shieldSprite.horizontal/2)*75,
+        //   0,
+        //   75,
+        //   75,
+        //   player.x-5,
+        //   player.y-5,
+        //   75,
+        //   70
+        // );
       }
 
 
@@ -285,7 +300,7 @@ function drawGame() {
       // Отрисовка шаров.
       for (var key = 0; key < player.balls.length; key++) {
         ctx.drawImage(
-          oBallImage,
+          ballImage,
           player.balls[key].sprPos*SIZES.ball.w,
           0,
           SIZES.ball.w,
@@ -381,10 +396,9 @@ function drawGame() {
     ctx.fill();
     ctx.lineWidth = 2;
     ctx.stroke();
-
-    // Отрисовка +2 в правом меню.
+    // Отрисовка x2 в правом меню.
     ctx.drawImage(
-      twoFireImage,
+      multiplyFireImage,
       SIZES.field.w + 100,
       34,
       35,
@@ -397,17 +411,18 @@ function drawGame() {
       ctx.font = '16px Verdana';
       ctx.fillStyle = '#191970';
       ctx.fillText("- " + currentPlayer.capability.shieldsCount, SIZES.field.w + 60, 55);
-      // Колличество +2
-      ctx.fillText("- 0"/* + currentPlayer.capability.shieldsCount*/, SIZES.field.w + 150, 55);
+      // Колличество x2
+      ctx.fillText("- " + currentPlayer.capability.multiplyFiresCount, SIZES.field.w + 150, 55);
 
     }
     // Управление
     ctx.font = '12px Verdana';
     ctx.fillText("Передвижеие: A, S, D, W", SIZES.canvas.w-SIZES.menu.w/2, 130);
     ctx.fillText("Изменить название дракона: P", SIZES.canvas.w-SIZES.menu.w/2, 166);
+    ctx.fillText("Увеличить колличество шаров x2: L", SIZES.canvas.w-SIZES.menu.w/2, 184);
     ctx.font = '15px Verdana';
     ctx.fillText("Атака: J . Щит: K", SIZES.canvas.w-SIZES.menu.w/2, 148);
-    ctx.fillText("Перерождение: R", SIZES.canvas.w-SIZES.menu.w/2, 184);
+    ctx.fillText("Перерождение: R", SIZES.canvas.w-SIZES.menu.w/2, 200);
 
     //
     ctx.font = '25px Verdana';

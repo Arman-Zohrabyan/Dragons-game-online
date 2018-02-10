@@ -63,6 +63,7 @@ io.on('connection', function(socket) {
       capability: { // меняющиеся навыки / колличество
         maxBalls: 1,
         shieldsCount: 0,
+        multiplyFiresCount: 1,
       },
       balls: [], // шары
       x: generateRandomNumber(userData.x-SIZES.dragonCanvas.w), //координата x дракона в поле
@@ -72,8 +73,11 @@ io.on('connection', function(socket) {
       fireSpeed: 8, // начальная скорость шара
       ownSpeed: 5, // скорость передвижения дракона
       enemiesKilled: 0, // колличество убитых врагов
+
       shield: false, // щит
       shieldCountDown: 0, // время до исчезновения щита
+      multiplyFire: false, // умножает колличество запускаемых шаров на 2
+      multiplyFireCountDown: 0, // время до исчерпания баффа multiplyFire
     };
   });
 
@@ -110,7 +114,13 @@ io.on('connection', function(socket) {
     // Если есть в складе запасной щит и щит не включен, активизируем щит.
     // TODO: проблема с проверкой, надо проверить capability && 
     if(capability && capability.shield && !player.shield && player.capability.shieldsCount > 0) {
-      activateShield(player);
+      activateCapability(player, "shield");
+    }
+
+    // Если есть в складе запасной щит и щит не включен, активизируем щит.
+    // TODO: проблема с проверкой, надо проверить capability && 
+    if(capability && capability.multiplyFire && player.capability.multiplyFiresCount > 0) {
+      activateCapability(player, "multiplyFire", multiplyFireUp, multiplyFireDown);
     }
 
     // изменить спрайт позицию активированного щита.
@@ -244,26 +254,40 @@ function movementBalls(player, userId) {
   player.balls = newBalls;
 }
 
-// активация щита
-function activateShield(player) {
-  player.capability.shieldsCount--;
-  player.shieldCountDown = 6;
-  player.shield = true;
-  countDown(player, {capability: "shield", countDown: "shieldCountDown"});
+// активация навыка
+function activateCapability(player, capability, effectUp, effectDown) {
+  player.capability[capability + "sCount"]--;
+  player[capability + "CountDown"] += 6;
+  if(effectUp) effectUp(player);
+
+  if(!player[capability]) {
+    player[capability] = true;
+    countDown(player, capability, effectDown);
+  }
 }
 
 
-// кулдаун скилов
-function countDown(player, options) {
+// кулдаун навыка
+function countDown(player, capability, effectDown) {
   setTimeout(function () {
-    if(player[options.countDown] !== 1) {
-      player[options.countDown]--;
-      countDown(player, options);
+    if(player[capability + "CountDown"] !== 1) {
+      player[capability + "CountDown"]--;
+      countDown(player, capability, effectDown);
     } else {
-      player[options.capability] = false;
+      player[capability] = false;
+      if(effectDown) effectDown(player);
     }
   }, 1000);
 }
+
+
+function multiplyFireUp(player) {
+  player.capability.maxBalls *= 2;
+}
+function multiplyFireDown(player) {
+  player.capability.maxBalls = 1;
+}
+
 
 // вызывая для генерации бонуса Щита. Как аргумент получает число в промежутке от 15 до 20 и поле завершения снова вызывается.
 function generateBonusShield() {
