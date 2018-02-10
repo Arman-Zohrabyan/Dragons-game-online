@@ -145,6 +145,8 @@ io.on('connection', function(socket) {
 
   // Функционал чата
   socket.on('send message', function(dragonName, message) {
+    message = `${message.trim()}`;
+    message = message.replace(/<(?:.|\n)*?>/gm, '');
     socket.emit('get message', dragonName, message);
   });
 

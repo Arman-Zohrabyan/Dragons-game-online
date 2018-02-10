@@ -1,6 +1,7 @@
 * {
 	padding: 0;
 	margin: 0;
+	user-select: none;
 }
 
 body {
@@ -53,7 +54,7 @@ canvas {
 
 }
   
-.welcome {
+.welcome, .about-bug {
 	text-align: center;
 }
 
