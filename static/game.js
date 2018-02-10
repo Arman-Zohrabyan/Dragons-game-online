@@ -264,7 +264,7 @@ function drawGame() {
       }
 
       if(player.multiplyFire) {
-        player.dragonName = "x2: " + player.multiplyFireCountDown + " / " + player.dragonName;
+        player.dragonName = "x" + player.capability.maxBalls + ": " + player.multiplyFireCountDown + " / " + player.dragonName;
 
         // ctx.drawImage(
         //   shieldImage,
@@ -418,17 +418,11 @@ function drawGame() {
     // Управление
     ctx.font = '12px Verdana';
     ctx.fillText("Передвижеие: A, S, D, W", SIZES.canvas.w-SIZES.menu.w/2, 130);
-    ctx.fillText("Изменить название дракона: P", SIZES.canvas.w-SIZES.menu.w/2, 166);
+    ctx.fillText("Изменить название дракона: P", SIZES.canvas.w-SIZES.menu.w/2, 184);
     ctx.font = '15px Verdana';
     ctx.fillText("Атака: J . Щит: K", SIZES.canvas.w-SIZES.menu.w/2, 148);
-    ctx.fillText("Колличество шаров x2: L", SIZES.canvas.w-SIZES.menu.w/2, 184);
+    ctx.fillText("Колличество шаров x2: L", SIZES.canvas.w-SIZES.menu.w/2, 166);
     ctx.fillText("Перерождение: R", SIZES.canvas.w-SIZES.menu.w/2, 200);
-
-    // Здесь будет чат
-    ctx.font = '25px Verdana';
-    ctx.fillText("ЗДЕСЬ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-90);
-    ctx.fillText("БУДЕТ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-60);
-    ctx.fillText("ЧАТ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-30);
 
     // Подсказка.
     ctx.font = '19px Verdana';
@@ -446,6 +440,8 @@ $(document).ready(function () {
   // Задаем респонзивно ширину и высоту канваса.
   $("#canvas").height(SIZES.documentInner.h);
   $("#canvas").width((SIZES.documentInner.h*11/6 > SIZES.documentInner.w) ? SIZES.documentInner.w : SIZES.documentInner.h*11/6);
+  // $(".JS-responsive").width($("#canvas").width()*2/11);
+  // $("#chat").height($("#canvas").height()*3/7);
 
   // Общие переменные и настройки канваса.
   canvas = $("#canvas")[0];

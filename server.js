@@ -141,6 +141,14 @@ io.on('connection', function(socket) {
     stream.write(JSON.stringify({[dragonName]: idea}) + "\n");
   });
 
+
+
+  // Функционал чата
+  socket.on('send message', function(dragonName, message) {
+    socket.emit('get message', dragonName, message);
+  });
+
+
   socket.on('disconnect', function() {
     delete players[objectKeyByValue(socketIdByUserId, socket.id)];
   });
