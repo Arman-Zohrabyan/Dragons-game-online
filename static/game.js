@@ -419,21 +419,23 @@ function drawGame() {
     ctx.font = '12px Verdana';
     ctx.fillText("Передвижеие: A, S, D, W", SIZES.canvas.w-SIZES.menu.w/2, 130);
     ctx.fillText("Изменить название дракона: P", SIZES.canvas.w-SIZES.menu.w/2, 166);
-    ctx.fillText("Увеличить колличество шаров x2: L", SIZES.canvas.w-SIZES.menu.w/2, 184);
     ctx.font = '15px Verdana';
     ctx.fillText("Атака: J . Щит: K", SIZES.canvas.w-SIZES.menu.w/2, 148);
+    ctx.fillText("Колличество шаров x2: L", SIZES.canvas.w-SIZES.menu.w/2, 184);
     ctx.fillText("Перерождение: R", SIZES.canvas.w-SIZES.menu.w/2, 200);
 
-    //
+    // Здесь будет чат
     ctx.font = '25px Verdana';
     ctx.fillText("ЗДЕСЬ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-90);
     ctx.fillText("БУДЕТ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-60);
     ctx.fillText("ЧАТ", SIZES.canvas.w-SIZES.menu.w/2, SIZES.menu.h-30);
 
     // Подсказка.
-    ctx.font = '16px Verdana';
-    ctx.textAlign = "start";
+    ctx.font = '19px Verdana';
     ctx.fillStyle = '#FFF';
+    ctx.fillText("Добавлен новый навык 'Колличество шаров x2', что бы использовать нажмите: L", SIZES.field.w/2, 20);
+    ctx.textAlign = "start";
+    ctx.font = '16px Verdana';
     ctx.fillText(hint, 5, 595);
   });
 }

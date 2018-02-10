@@ -63,7 +63,7 @@ io.on('connection', function(socket) {
       capability: { // меняющиеся навыки / колличество
         maxBalls: 1,
         shieldsCount: 0,
-        multiplyFiresCount: 1,
+        multiplyFiresCount: 2,
       },
       balls: [], // шары
       x: generateRandomNumber(userData.x-SIZES.dragonCanvas.w), //координата x дракона в поле
@@ -303,6 +303,7 @@ function generateBonusShield() {
   }, time*1000);
 }
 
+// генерирует рандомную координату где нет дракона (для навыков)
 function getRandomFreeCoordinates() {
   var x = Math.floor(Math.random()*SIZES.field.w);
   var y = Math.floor(Math.random()*SIZES.field.h);
