@@ -25,7 +25,7 @@ if(dragonGameData === null) {
 }
 
 var currentPlayer = {};
-
+var inputFoxused = false;
 // Временная подсказка.
 var hint = STRINGS["hint1"];
 
@@ -120,57 +120,63 @@ function getSpriteVerticalPosition() {
 // Обработчики событий.
 function hendlerEvents() {
   $(document).on('keydown', function(event) {
-    var code = event.keyCode;
-    if(code === 37 || code === 65) {         // left || A
-      actions.movement.left = true;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 38 || code === 87) { // up || W
-      actions.movement.up = true;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 39 || code === 68) { // right || D
-      actions.movement.right = true;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 40 || code === 83) { // down || S
-      actions.movement.down = true;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
+    inputFoxused = $("#usermsg").is(":focus");
+    if(!inputFoxused) {
+      var code = event.keyCode;
+      if(code === 37 || code === 65) {         // left || A
+        actions.movement.left = true;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      } else if (code === 38 || code === 87) { // up || W
+        actions.movement.up = true;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      } else if (code === 39 || code === 68) { // right || D
+        actions.movement.right = true;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      } else if (code === 40 || code === 83) { // down || S
+        actions.movement.down = true;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      }
     }
   });
 
   $(document).on('keyup', function(event) {
-    var code = event.keyCode;
-    if(code === 37 || code === 65) {         // left || A
-      actions.movement.left = false;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 38 || code === 87) { // up || W
-      actions.movement.up = false;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 39 || code === 68) { // right || D
-      actions.movement.right = false;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 40 || code === 83) { // down || S
-      actions.movement.down = false;
-      actions.spritePositions.vertical = getSpriteVerticalPosition();
-    } else if (code === 74) {                // 74 = J
-      actions.capability.fire = true;
-    } else if (code === 75) {                // 75=K
-      actions.capability.shield = true;
-    } else if (code === 76) {                // 76=L
-      actions.capability.multiplyFire = true;
-    } else if (code === 80) {                // 80=P
-      actions.setNewNameForDragon = prompt(STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
-      if(actions.setNewNameForDragon.length > 16) {
-        actions.setNewNameForDragon = actions.setNewNameForDragon.substr(0,16);
-      }
-      dragonName = actions.setNewNameForDragon;
-      localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
-    } else if (code === 73) {                // 73=I
-      var idea = prompt("Ваша идея?");
-      if(idea) {
-        socket.emit("new idea", dragonName, idea);
-      }
-    } else if (code === 82) {                // 82=R
-      if($.isEmptyObject(currentPlayer)) {
-        socket.emit('new player', {x: SIZES.field.w, y: SIZES.field.h, dragonName: dragonName, id: playerId});
+    inputFoxused = $("#usermsg").is(":focus");
+    if(!inputFoxused) {
+      var code = event.keyCode;
+      if(code === 37 || code === 65) {         // left || A
+        actions.movement.left = false;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      } else if (code === 38 || code === 87) { // up || W
+        actions.movement.up = false;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      } else if (code === 39 || code === 68) { // right || D
+        actions.movement.right = false;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      } else if (code === 40 || code === 83) { // down || S
+        actions.movement.down = false;
+        actions.spritePositions.vertical = getSpriteVerticalPosition();
+      } else if (code === 74) {                // 74 = J
+        actions.capability.fire = true;
+      } else if (code === 75) {                // 75=K
+        actions.capability.shield = true;
+      } else if (code === 76) {                // 76=L
+        actions.capability.multiplyFire = true;
+      } else if (code === 80) {                // 80=P
+        actions.setNewNameForDragon = prompt(STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
+        if(actions.setNewNameForDragon.length > 16) {
+          actions.setNewNameForDragon = actions.setNewNameForDragon.substr(0,16);
+        }
+        dragonName = actions.setNewNameForDragon;
+        localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
+      } else if (code === 73) {                // 73=I
+        var idea = prompt("Ваша идея?");
+        if(idea) {
+          socket.emit("new idea", dragonName, idea);
+        }
+      } else if (code === 82) {                // 82=R
+        if($.isEmptyObject(currentPlayer)) {
+          socket.emit('new player', {x: SIZES.field.w, y: SIZES.field.h, dragonName: dragonName, id: playerId});
+        }
       }
     }
   });
@@ -367,6 +373,12 @@ function drawGame() {
       ctx.font = '30px Verdana';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.fillText(STRINGS["hintForTheDeads"], SIZES.field.w/2, SIZES.field.h/2);
+    }
+
+    if(inputFoxused) {
+      ctx.font = '30px Verdana';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillText("Кликайте на экран что бы управлять драконом.", SIZES.field.w/2, SIZES.field.h/2-60);
     }
 
 
