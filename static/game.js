@@ -67,7 +67,7 @@ var actions = {
     shield: false,
     multiplyFire: false,
   },
-  setNewNameForDragon: '',
+  setNewNameForDragon: null,
 };
 
 
@@ -162,12 +162,14 @@ function hendlerEvents() {
       } else if (code === 76) {                // 76=L
         actions.capability.multiplyFire = true;
       } else if (code === 80) {                // 80=P
-        actions.setNewNameForDragon = prompt(STRINGS["promptChangeDragonName"]) || "Undefined Dragon";
-        if(actions.setNewNameForDragon.length > 16) {
-          actions.setNewNameForDragon = actions.setNewNameForDragon.substr(0,16);
+        actions.setNewNameForDragon = prompt(STRINGS["promptChangeDragonName"]);
+        if(actions.setNewNameForDragon) {
+          if(actions.setNewNameForDragon.length > 16) {
+            actions.setNewNameForDragon = actions.setNewNameForDragon.substr(0,16);
+          }
+          dragonName = actions.setNewNameForDragon;
+          localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
         }
-        dragonName = actions.setNewNameForDragon;
-        localStorage.setItem("data", JSON.stringify({playerId: playerId, dragonName: dragonName}));
       } else if (code === 73) {                // 73=I
         var idea = prompt("Ваша идея?");
         if(idea) {
@@ -179,6 +181,10 @@ function hendlerEvents() {
         }
       }
     }
+  });
+
+  $(document).on('click', function() {
+    inputFoxused = $("#usermsg").is(":focus");
   });
 }
 
@@ -439,7 +445,7 @@ function drawGame() {
     // Подсказка.
     ctx.font = '19px Verdana';
     ctx.fillStyle = '#FFF';
-    ctx.fillText("Добавлен новый навык 'Колличество шаров x2', что бы использовать нажмите: L", SIZES.field.w/2, 20);
+    ctx.fillText("Спасибо всем кто пишет о багах / дает новые идеи. Я читаю. Спасибо!", SIZES.field.w/2, 20);
     ctx.textAlign = "start";
     ctx.font = '16px Verdana';
     ctx.fillText(hint, 5, 595);

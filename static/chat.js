@@ -1,11 +1,8 @@
 $(document).ready(function () {
-  var yourDragonName = dragonName;
 
-  // $("#chat").append(chatContent);
   $("#chat").width($("#canvas").width()*2/11 - 20);
   $("#chat").height($("#canvas").height()*3/7);
   $("#chatbox").height($("#chat").height() - $("#form").height() - $("#menu").height() - 45);
-
 
   socket.on('get message', function(dragonName, message) {
     $("#chatbox").prepend("<p><b>" + dragonName + ":</b> " + message + "</p>");
@@ -14,6 +11,7 @@ $(document).ready(function () {
 
   $("#submitmsg").on('click', function(e) {
     e.preventDefault();
+    var yourDragonName = dragonName;
     var msg = $("#usermsg").val();
     msg = msg.replace(/<(?:.|\n)*?>/gm, '');
     // 0 или пустое сообщение не отправляем    (Символы < или > не допускаются. Все что будет внутри <> - будет удалено)

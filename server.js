@@ -3,7 +3,6 @@ var http = require('http');
 var path = require('path');
 var socketIO = require('socket.io');
 var fs = require('fs');
-var stream = fs.createWriteStream("ideas.txt");
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
@@ -20,6 +19,8 @@ server.listen(5000, function() {
 });
 
 
+var stream1 = fs.createWriteStream("ideas.txt");
+var stream2 = fs.createWriteStream("chat.txt");
 
 
 var initialPlayer = {
@@ -138,13 +139,14 @@ io.on('connection', function(socket) {
   });
 
   socket.on('new idea', function(dragonName, idea) {
-    stream.write(JSON.stringify({[dragonName]: idea}) + "\n");
+    stream1.write(JSON.stringify({[dragonName]: idea}) + "\n");
   });
 
 
 
   // Функционал чата
   socket.on('send message', function(dragonName, message) {
+    stream2.write(JSON.stringify({[dragonName]: message}) + "\n");
     message = `${message.trim()}`;
     message = message.replace(/<(?:.|\n)*?>/gm, '');
     socket.emit('get message', dragonName, message);
