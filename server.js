@@ -149,7 +149,7 @@ io.on('connection', function(socket) {
     stream2.write(JSON.stringify({[dragonName]: message}) + "\n");
     message = `${message.trim()}`;
     message = message.replace(/<(?:.|\n)*?>/gm, '');
-    socket.emit('get message', dragonName, message);
+    io.sockets.emit('get message', dragonName, message);
   });
 
 
