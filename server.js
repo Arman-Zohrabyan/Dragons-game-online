@@ -6,7 +6,7 @@ var fs = require('fs');
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
-app.set('port', 5000);
+app.set('port', 5001);
 app.use('/static', express.static(__dirname + '/static'));
 
 
@@ -14,11 +14,11 @@ app.get('/', function(request, response) {
   response.sendFile(path.join(__dirname, 'static/index.html'));
 });
 
-server.listen(5000, function() {
-  console.log('Starting server on port 5000');
+server.listen(5001, function() {
+  console.log('Starting server on port 5001');
 });
 
-
+/*
 var stream1 = fs.createWriteStream("ideas.txt");
 var stream2 = fs.createWriteStream("chat.txt");
 
@@ -392,3 +392,4 @@ function objectKeyByValue(obj, value) {
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+*/

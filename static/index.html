@@ -1,32 +1,10 @@
 <html>
   <head>
     <title>^^) Welcome</title>
-    <link rel="shortcut icon" href="/static/images/logo.png" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" href="/static/css/style.css">
-    <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
-    <div id="game">
-      <canvas id="canvas"></canvas>
-      <div id="chat">
-        <div id="menu">
-          <p class="welcome">ЧАТ</p>
-        </div>
-        <div id="chatbox">
-          <p class="about-bug"><b><small>ասֆ джан это не баг. Кроме названия дракона, мне нечем отличить игроков в чате пока нет регистрации в игре. Через userId не вариант.</small></b></p>
-        </div>
-        <form name="message" id="form" action="">
-          <input name="usermsg" type="text" id="usermsg" placeholder="Сообщение" />
-          <input name="submitmsg" type="submit"  id="submitmsg" value="Отправить" />
-        </form>
-      </div>
-    </div>
-
+    <div id="root"></div>
 
   </body>
-  <script src="/static/strings.js"></script>
-  <script src="/static/jquery.js"></script>
-  <script src="/static/game.js"></script>
-
-  <script src="/static/chat.js" async></script>
+  <script src="/js/boundle.js"></script>
 </html>
