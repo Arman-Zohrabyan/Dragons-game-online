@@ -18,7 +18,8 @@ server.listen(5001, function() {
   console.log('Starting server on port 5001');
 });
 
-/*
+
+
 var stream1 = fs.createWriteStream("ideas.txt");
 var stream2 = fs.createWriteStream("chat.txt");
 
@@ -392,4 +393,3 @@ function objectKeyByValue(obj, value) {
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-*/
