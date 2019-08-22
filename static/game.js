@@ -218,6 +218,7 @@ function drawGame() {
     // Задний фон.
     ctx.drawImage(backgroundImage, 0, 0, SIZES.field.w, SIZES.field.h);
 
+    // Отрисовка бонуса Щита в поле.
     if(bonuses.shield) {
       ctx.strokeStyle = "#1E90FF";
       ctx.fillStyle = "#AFEEEE";
@@ -228,6 +229,29 @@ function drawGame() {
       ctx.arc(
         bonuses.shield.x,
         bonuses.shield.y,
+        10,
+        0,
+        Math.PI*2,
+        false
+      );
+
+      ctx.closePath();
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.stroke(); 
+    }
+
+    // Отрисовка бонуса x2 в поле.
+    if(bonuses.multiplyFire) {
+      ctx.strokeStyle = "#1E90FF";
+      ctx.fillStyle = "#CCCCCC";
+      ctx.beginPath();
+      ctx.shadowBlur=20;
+      ctx.shadowColor="black";
+
+      ctx.arc(
+        bonuses.multiplyFire.x,
+        bonuses.multiplyFire.y,
         10,
         0,
         Math.PI*2,

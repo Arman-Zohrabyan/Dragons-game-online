@@ -49,7 +49,10 @@ var SIZES = {
 
 
 
-generateBonusShield();
+generateBonus('shield');
+generateBonus('multiplyFire');
+
+
 io.on('connection', function(socket) {
   socket.on('new player', function(userData) {
     socketIdByUserId[userData.id] = socket.id;
@@ -135,8 +138,12 @@ io.on('connection', function(socket) {
     }
 
     if(bonuses.shield) {
-      checkPlayersAndShieldContact(player);
+      checkPlayerAndBonusContact(player, 'shield');
     }
+    if(bonuses.multiplyFire) {
+      checkPlayerAndBonusContact(player, 'multiplyFire');
+    }
+
   });
 
   socket.on('new idea', function(dragonName, idea) {
@@ -183,15 +190,15 @@ function movementPlayer(player, movement) {
 }
 
 // Проверить соприкосновение щита и игрока
-function checkPlayersAndShieldContact(player) {
+function checkPlayerAndBonusContact(player, bonus) {
   if(isIntersects(
       player,
       {x: player.x+SIZES.dragonCanvas.w,y: player.y+SIZES.dragonCanvas.h},
-      bonuses.shield,
-      {x: bonuses.shield.x+20, y: bonuses.shield.y+20}
+      bonuses[bonus],
+      {x: bonuses[bonus].x+20, y: bonuses[bonus].y+20}
   )) {
-    player.capability.shieldsCount++;
-    delete bonuses.shield;
+    player.capability[`${bonus}sCount`]++;
+    delete bonuses[bonus];
   }
 }
 
@@ -302,17 +309,17 @@ function multiplyFireDown(player) {
 }
 
 
-// вызывая для генерации бонуса Щита. Как аргумент получает число в промежутке от 15 до 20 и поле завершения снова вызывается.
-function generateBonusShield() {
+// вызывая для генерации бонусов в промежутке 15-20 сек. Аргумент - название бонуса.
+function generateBonus(bonus) {
   time = getRandomInt(15, 20);
   setTimeout( function() {
 
     if(Object.keys(players).length > 0) {
       var coordinates = getRandomFreeCoordinates();
-      bonuses.shield = {x: coordinates.x, y: coordinates.y};
+      bonuses[bonus] = {x: coordinates.x, y: coordinates.y};
     }
 
-    generateBonusShield();
+    generateBonus(bonus);
   }, time*1000);
 }
 
