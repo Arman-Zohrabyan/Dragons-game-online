@@ -16,7 +16,7 @@ app.get('/', function(request, response) {
 });
 
 server.listen(PORT, function() {
-  console.log('Starting server on port PORT');
+  console.log(`Starting server on port ${PORT}`);
 });
 
 
